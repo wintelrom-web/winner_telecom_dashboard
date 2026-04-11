@@ -109,6 +109,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Django 5.0+ primary key field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # CORS settings - plus sécurisé en production
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
