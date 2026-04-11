@@ -19,7 +19,7 @@ const Header = ({ onLogout }) => {
               <div className="user-avatar">
                 <User size={16} />
               </div>
-              <span>Admin</span>
+              <span>WINTEL</span>
             </div>
             <div className="header-actions">
               <button className="menu-button">

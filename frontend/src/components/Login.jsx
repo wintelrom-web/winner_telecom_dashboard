@@ -25,7 +25,7 @@ const Login = ({ onLogin }) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Check credentials
-    if (credentials.username === 'admin' && credentials.password === 'admin123') {
+    if (credentials.username === 'WINTEL' && credentials.password === 'WINNER@2021') {
       onLogin(true);
     } else {
       setError('Nom d\'utilisateur ou mot de passe incorrect');
