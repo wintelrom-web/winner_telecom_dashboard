@@ -33,12 +33,6 @@ class ClientSerializer(serializers.ModelSerializer):
             )
         
         return client
-
-class PaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Payment
-        fields = ['id', 'client', 'username', 'amount', 'type', 'payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
-        read_only_fields = ['payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
     
     def get_subscription(self, obj):
         try:
@@ -53,6 +47,12 @@ class PaymentSerializer(serializers.ModelSerializer):
             }
         except Subscription.DoesNotExist:
             return None
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'client', 'username', 'amount', 'type', 'payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
+        read_only_fields = ['payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     client_nom = serializers.CharField(source='client.nom', read_only=True)
