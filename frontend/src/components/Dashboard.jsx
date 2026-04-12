@@ -64,7 +64,7 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
-  const filteredClients = clients.filter(client => {
+  const filteredClients = Array.isArray(clients) ? clients.filter(client => {
     // First apply search term
     const matchesSearch = 
       client.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,7 +81,7 @@ const Dashboard = ({ onLogout }) => {
     if (filterStatus === 'échéance') return client.subscription?.échéance_proche === true;
     
     return true;
-  });
+  }) : [];
 
   const handleOpenModal = (modalName) => {
     setModals(prev => ({ ...prev, [modalName]: true }));
