@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Users, CheckCircle, XCircle, AlertTriangle, DollarSign } from 'lucide-react';
 
 const StatsCards = ({ stats, onCardClick }) => {
   const cards = [
@@ -33,7 +33,15 @@ const StatsCards = ({ stats, onCardClick }) => {
       value: stats.échéances_proches || 0,
       icon: <AlertTriangle size={24} />,
       color: '#f59e0b',
-      bgColor: '#fffbeb'
+      bgColor: '#fef3c7'
+    },
+    {
+      id: 'versements',
+      title: 'Total Versements',
+      value: `${(stats.total_versements || 0).toLocaleString()}F`,
+      icon: <DollarSign size={24} />,
+      color: '#10b981',
+      bgColor: '#ecfdf5'
     }
   ];
 

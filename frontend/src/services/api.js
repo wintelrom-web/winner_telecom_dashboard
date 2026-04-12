@@ -135,3 +135,13 @@ export const payerAbonnement = async (clientId) => {
     throw error;
   }
 };
+
+export const getPayments = async (url = '/payments/') => {
+  try {
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching payments:', error);
+    throw error;
+  }
+};

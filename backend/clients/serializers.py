@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Subscription
+from .models import Client, Subscription, Payment
 
 class ClientSerializer(serializers.ModelSerializer):
     subscription = serializers.SerializerMethodField()
@@ -33,6 +33,12 @@ class ClientSerializer(serializers.ModelSerializer):
             )
         
         return client
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'client', 'username', 'amount', 'type', 'payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
+        read_only_fields = ['payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
     
     def get_subscription(self, obj):
         try:

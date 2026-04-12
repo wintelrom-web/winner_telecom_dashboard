@@ -9,6 +9,7 @@ import Reports from './Reports';
 import Settings from './Settings';
 import Edit from './Edit';
 import Info from './Info';
+import Fonds from './Fonds';
 import { getDashboardStats, getClients, blockClientAccess, activateClientAccess } from '../services/api';
 
 const Dashboard = ({ onLogout }) => {
@@ -16,7 +17,8 @@ const Dashboard = ({ onLogout }) => {
     total_clients: 0,
     abonnements_actifs: 0,
     expirés: 0,
-    échéances_proches: 0
+    échéances_proches: 0,
+    total_versements: 0
   });
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,6 +139,10 @@ const Dashboard = ({ onLogout }) => {
     setEditingClient(null);
   };
 
+  const handleBackFromFonds = () => {
+    setCurrentView('dashboard');
+  };
+
   const handleViewClient = (client) => {
     setViewingClient(client);
     setCurrentView('info');
@@ -215,6 +221,12 @@ const Dashboard = ({ onLogout }) => {
       case 'addClient':
         handleOpenModal('addClient');
         break;
+      case 'fonds':
+        setCurrentView('fonds');
+        break;
+      case 'clientDetails':
+        setCurrentView('dashboard');
+        break;
       case 'reports':
         setCurrentView('reports');
         break;
@@ -245,16 +257,8 @@ const Dashboard = ({ onLogout }) => {
             onClientUpdated={handleClientUpdated}
             onClientDeleted={handleClientDeleted}
           />
-        ) : viewingClient && currentView === 'info' ? (
-          <Info 
-            client={viewingClient}
-            onBack={handleBackFromInfo}
-            onEdit={handleEditClient}
-            onRefresh={fetchData}
-            onBlockAccess={handleBlockAccess}
-            onActivateAccess={handleActivateAccess}
-            onManagePayment={handleManagePayment}
-          />
+        ) : currentView === 'fonds' ? (
+          <Fonds onBack={handleBackFromFonds} />
         ) : (
           <>
             {currentView === 'dashboard' && (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserPlus, FileText, Settings, Users } from 'lucide-react';
+import { UserPlus, FileText, Settings, Users, DollarSign } from 'lucide-react';
 
 const ActionButtons = ({ onAction }) => {
   const buttons = [
@@ -10,10 +10,16 @@ const ActionButtons = ({ onAction }) => {
       className: 'btn-primary'
     },
     {
+      label: 'FONDS',
+      icon: <DollarSign size={20} />,
+      action: 'fonds',
+      className: 'btn-success'
+    },
+    {
       label: 'Détails Clients',
       icon: <Users size={20} />,
       action: 'clientDetails',
-      className: 'btn-success'
+      className: 'btn-primary'
     },
     {
       label: 'Rapports',

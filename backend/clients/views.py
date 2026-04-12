@@ -3,10 +3,10 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-from django.db import DatabaseError
+from django.db import DatabaseError, models
 import logging
-from .models import Client, Subscription
-from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer
+from .models import Client, Subscription, Payment
+from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer, PaymentSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -145,12 +145,50 @@ class ClientViewSet(viewsets.ModelViewSet):
             client.statut = 'actif'
             client.save()
             
+            # Créer un enregistrement de paiement
+            from .models import Payment
+            from .serializers import PaymentSerializer
+            
+            # Extraire le montant du prix du client
+            amount_map = {
+                '1Mo 5000F': 5000,
+                'Access 10000F': 10000,
+                'Premium 15000F': 15000,
+                'VIP 20000F': 20000
+            }
+            
+            amount = amount_map.get(client.prix, 5000)  # Default 5000F
+            
+            # Déterminer le type d'abonnement
+            type_map = {
+                '1Mo 5000F': '1Mo',
+                'Access 10000F': 'Access',
+                'Premium 15000F': 'Premium',
+                'VIP 20000F': 'VIP'
+            }
+            
+            payment_type = type_map.get(client.prix, '1Mo')
+            
+            # Créer le paiement
+            payment = Payment.objects.create(
+                client=client,
+                username=client.nom,
+                amount=amount,
+                type=payment_type,
+                month=timezone.now().month,
+                year=timezone.now().year,
+                day=timezone.now().day
+            )
+            
+            payment_serializer = PaymentSerializer(payment)
+            
             return Response({
                 'status': 'paiement effectué',
                 'message': f'Abonnement étendu jusqu\'au {nouvelle_date_fin.strftime("%d/%m/%Y")}',
                 'nouvelle_date_fin': nouvelle_date_fin,
                 'client_nom': client.nom,
-                'client_matricule': client.matricule
+                'client_matricule': client.matricule,
+                'payment': payment_serializer.data
             })
             
         except Exception as e:
@@ -165,6 +203,23 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.select_related('client').all()
     serializer_class = SubscriptionSerializer
 
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.select_related('client').all().order_by('-payment_date')
+    serializer_class = PaymentSerializer
+    filterset_fields = ['month', 'year', 'type', 'client']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        month = self.request.query_params.get('month')
+        year = self.request.query_params.get('year')
+        
+        if month:
+            queryset = queryset.filter(month=month)
+        if year:
+            queryset = queryset.filter(year=year)
+            
+        return queryset
+
 class DashboardStatsViewSet(viewsets.ViewSet):
     def list(self, request):
         try:
@@ -175,16 +230,28 @@ class DashboardStatsViewSet(viewsets.ViewSet):
             # Échéances proches: count subscriptions ending on the 30th or 31st of any month
             # This alerts when payment/echeance is due at month end
             today = timezone.now().date()
+            current_month = today.month
+            current_year = today.year
+            
+            # Count subscriptions ending this month on 30th or 31st
             échéances_proches = Subscription.objects.filter(
-                date_fin__gt=today,
-                date_fin__day__in=[30, 31]
+                date_fin__year=current_year,
+                date_fin__month=current_month,
+                date_fin__day__in=[30, 31],
+                est_actif=True
             ).count()
+            
+            # Calculer le total des paiements
+            total_versements = Payment.objects.aggregate(
+                total=models.Sum('amount')
+            )['total'] or 0
             
             stats = {
                 'total_clients': total_clients,
                 'abonnements_actifs': abonnements_actifs,
                 'expirés': expirés,
-                'échéances_proches': échéances_proches
+                'échéances_proches': échéances_proches,
+                'total_versements': total_versements
             }
             
             serializer = DashboardStatsSerializer(stats)
