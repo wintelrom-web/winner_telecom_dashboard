@@ -13,6 +13,7 @@ class Client(models.Model):
     nom = models.CharField(max_length=200)
     telephone = models.CharField(max_length=20)
     photo_url = models.URLField(max_length=500, blank=True, null=True)
+    prix = models.CharField(max_length=50, default='1Mo 5000F')
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
     date_creation = models.DateTimeField(auto_now_add=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)

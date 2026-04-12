@@ -8,7 +8,7 @@ class ClientSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Client
-        fields = ['id', 'matricule', 'quartier', 'nom', 'telephone', 'photo_url', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
+        fields = ['id', 'matricule', 'quartier', 'nom', 'telephone', 'photo_url', 'prix', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
     
     def validate(self, data):
         # La photo n'est plus obligatoire avec URLField

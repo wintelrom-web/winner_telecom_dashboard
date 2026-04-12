@@ -8,6 +8,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
     nom: '',
     telephone: '',
     quartier: '',
+    prix: '1Mo 5000F',
     date_debut: '',
     date_fin: '',
     image: null
@@ -238,6 +239,27 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           placeholder="Jean Dupont"
           className="form-input"
         />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="prix">
+          <Tag size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          Prix *
+        </label>
+        <select
+          id="prix"
+          name="prix"
+          value={formData.prix}
+          onChange={handleChange}
+          required
+          className="form-input"
+        >
+          <option value="1Mo 5000F">1Mo - 5000F</option>
+          <option value="Access 10000F">Access - 10000F</option>
+          <option value="Premium 15000F">Premium - 15000F</option>
+          <option value="VIP 20000F">VIP - 20000F</option>
+        </select>
+        <small>Sélectionner l'offre d'abonnement</small>
       </div>
 
       <div className="form-group">
