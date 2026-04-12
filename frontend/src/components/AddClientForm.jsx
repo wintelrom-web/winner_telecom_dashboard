@@ -216,15 +216,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           name="matricule"
           value={formData.matricule}
           onChange={handleChange}
-          disabled
+          placeholder="Ex: WT202600001"
           className="form-input"
-          style={{ 
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-            cursor: 'not-allowed',
-            fontWeight: '600'
-          }}
+          required
         />
-        <small>Généré automatiquement</small>
+        <small>Saisir un matricule unique ou laisser vide pour générer automatiquement</small>
       </div>
 
       <div className="form-group">
