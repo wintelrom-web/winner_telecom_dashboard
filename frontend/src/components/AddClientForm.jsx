@@ -239,7 +239,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           required
           className="form-input"
         >
-          <option value="1Mo 5000F">1Mo - 5000F</option>
+          <option value="1Mo 5000F">1Mo Classique - 5000F</option>
           <option value="Access 10000F">Access - 10000F</option>
           <option value="Premium 15000F">Premium - 15000F</option>
           <option value="VIP 20000F">VIP - 20000F</option>
