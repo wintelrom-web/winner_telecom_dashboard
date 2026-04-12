@@ -18,20 +18,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Generate matricule automatically on component mount
-  useEffect(() => {
-    const generateMatricule = () => {
-      const year = new Date().getFullYear();
-      const random = Math.floor(Math.random() * 90000) + 10000;
-      return `WT${year}${random}`;
-    };
-    
-    setFormData(prev => ({
-      ...prev,
-      matricule: generateMatricule()
-    }));
-  }, []);
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -217,11 +203,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           name="matricule"
           value={formData.matricule}
           onChange={handleChange}
-          placeholder="Ex: WT202600001"
+          placeholder="Saisir le matricule manuellement"
           className="form-input"
           required
         />
-        <small>Saisir un matricule unique ou laisser vide pour générer automatiquement</small>
+        small>Saisir un matricule unique (ex: WT202600001)</small>
       </div>
 
       <div className="form-group">
