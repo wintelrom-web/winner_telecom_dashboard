@@ -50,11 +50,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       }
     }
 
-    // Don't allow manual changes to matricule
-    if (name === 'matricule') {
-      return;
-    }
-
+    
     setFormData({
       ...formData,
       [name]: value || ''
