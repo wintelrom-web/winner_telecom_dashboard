@@ -8,7 +8,9 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
     nom: '',
     telephone: '',
     quartier: '',
-    statut: 'actif'
+    statut: 'actif',
+    date_debut: '',
+    date_fin: ''
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -21,7 +23,9 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
         nom: client.nom || '',
         telephone: client.telephone || '',
         quartier: client.quartier || '',
-        statut: client.statut || 'actif'
+        statut: client.statut || 'actif',
+        date_debut: client.subscription?.date_debut || '',
+        date_fin: client.subscription?.date_fin || ''
       });
     }
   }, [client]);
@@ -215,6 +219,36 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
                 className="form-input"
                 placeholder="Entrez le quartier"
                 required
+              />
+            </div>
+
+            {/* Date début abonnement */}
+            <div className="form-group">
+              <label className="form-label">
+                <Calendar size={16} style={{ marginRight: '0.5rem' }} />
+                Date début abonnement
+              </label>
+              <input
+                type="date"
+                name="date_debut"
+                value={formData.date_debut}
+                onChange={handleChange}
+                className="form-input"
+              />
+            </div>
+
+            {/* Date fin abonnement */}
+            <div className="form-group">
+              <label className="form-label">
+                <Calendar size={16} style={{ marginRight: '0.5rem' }} />
+                Date fin abonnement
+              </label>
+              <input
+                type="date"
+                name="date_fin"
+                value={formData.date_fin}
+                onChange={handleChange}
+                className="form-input"
               />
             </div>
 
