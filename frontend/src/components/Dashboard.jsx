@@ -117,6 +117,14 @@ const Dashboard = ({ onLogout }) => {
 
   const handleClientUpdated = async () => {
     await fetchData(); // Refresh data after updating client
+    // Update viewingClient if it exists with the updated data
+    if (viewingClient) {
+      const updatedClients = await getClients();
+      const updatedClient = updatedClients.find(c => c.id === viewingClient.id);
+      if (updatedClient) {
+        setViewingClient(updatedClient);
+      }
+    }
     setEditingClient(null);
   };
 
