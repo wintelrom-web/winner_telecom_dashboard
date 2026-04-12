@@ -241,10 +241,15 @@ class DashboardStatsViewSet(viewsets.ViewSet):
                 est_actif=True
             ).count()
             
-            # Calculer le total des paiements
-            total_versements = Payment.objects.aggregate(
-                total=models.Sum('amount')
-            )['total'] or 0
+            # Calculer le total des paiements avec gestion d'erreur
+            try:
+                total_versements = Payment.objects.aggregate(
+                    total=models.Sum('amount')
+                )['total'] or 0
+            except Exception as e:
+                # Si la colonne amount n'existe pas, retourner 0
+                logger.error(f"Error calculating total_versements: {str(e)}")
+                total_versements = 0
             
             stats = {
                 'total_clients': total_clients,
