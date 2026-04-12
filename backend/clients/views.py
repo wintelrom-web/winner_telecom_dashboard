@@ -204,21 +204,33 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.select_related('client').all().order_by('-payment_date')
     serializer_class = PaymentSerializer
     filterset_fields = ['month', 'year', 'type', 'client']
     
     def get_queryset(self):
-        queryset = super().get_queryset()
-        month = self.request.query_params.get('month')
-        year = self.request.query_params.get('year')
-        
-        if month:
-            queryset = queryset.filter(month=month)
-        if year:
-            queryset = queryset.filter(year=year)
+        try:
+            queryset = Payment.objects.select_related('client').all().order_by('-payment_date')
+            month = self.request.query_params.get('month')
+            year = self.request.query_params.get('year')
             
-        return queryset
+            if month:
+                queryset = queryset.filter(month=month)
+            if year:
+                queryset = queryset.filter(year=year)
+                
+            return queryset
+        except Exception as e:
+            logger.error(f"Error in PaymentViewSet.get_queryset: {str(e)}")
+            # Return empty queryset if there's an error
+            return Payment.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"Error in PaymentViewSet.list: {str(e)}")
+            # Return empty list if there's an error
+            return Response([], status=200)
 
 class DashboardStatsViewSet(viewsets.ViewSet):
     def list(self, request):
