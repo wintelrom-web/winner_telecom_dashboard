@@ -36,18 +36,36 @@ class Subscription(models.Model):
     def jours_restants(self):
         if self.date_fin:
             aujourd_hui = timezone.now().date()
+            # Convertir string en date si nécessaire
+            if isinstance(self.date_fin, str):
+                from datetime import datetime
+                self.date_fin = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
             difference = self.date_fin - aujourd_hui
             return difference.days
         return 0
     
     @property
     def est_expiré(self):
-        return self.date_fin and self.date_fin < timezone.now().date()
+        if self.date_fin:
+            # Convertir string en date si nécessaire
+            if isinstance(self.date_fin, str):
+                from datetime import datetime
+                date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
+            else:
+                date_fin_obj = self.date_fin
+            return date_fin_obj < timezone.now().date()
+        return False
     
     @property
     def échéance_proche(self):
         # Returns True if the expiration date is on the 30th or 31st of any month
         # This alerts when payment/echeance is due at month end
         if self.date_fin:
-            return self.date_fin.day in [30, 31]
+            # Convertir string en date si nécessaire
+            if isinstance(self.date_fin, str):
+                from datetime import datetime
+                date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
+            else:
+                date_fin_obj = self.date_fin
+            return date_fin_obj.day in [30, 31]
         return False
