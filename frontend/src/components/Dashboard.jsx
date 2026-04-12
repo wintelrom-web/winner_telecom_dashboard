@@ -188,8 +188,8 @@ const Dashboard = ({ onLogout }) => {
         const { payerAbonnement } = await import('../services/api');
         const result = await payerAbonnement(client.id);
         
-        // Afficher le message de succès
-        alert(`${result.message}\n\nClient: ${result.client_nom}\nMatricule: ${result.client_matricule}\nNouvelle date de fin: ${result.nouvelle_date_fin}`);
+        // Afficher le message de succès avec détails du paiement
+        alert(`Paiement effectué avec succès!\n\nClient: ${client.nom}\nMatricule: ${client.matricule}\nMontant: ${client.prix}\nNouvelle date de fin: ${result.nouvelle_date_fin}`);
         
         // Rafraîchir les données
         fetchData();

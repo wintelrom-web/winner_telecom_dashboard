@@ -184,8 +184,7 @@ class ClientViewSet(viewsets.ModelViewSet):
             
             return Response({
                 'status': 'paiement effectué',
-                'message': f'Abonnement étendu jusqu\'au {nouvelle_date_fin.strftime("%d/%m/%Y")}',
-                'nouvelle_date_fin': nouvelle_date_fin,
+                'message': f'Paiement de {client.prix} effectué avec succès pour {client.nom}',
                 'client_nom': client.nom,
                 'client_matricule': client.matricule,
                 'payment': payment_serializer.data

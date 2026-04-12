@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Filter, Users, Edit, Info, DollarSign, CreditCard } from 'lucide-react';
-import { blockClientAccess, activateClientAccess, updateClient, payerAbonnement } from '../services/api';
+import { Search, Filter, Users, Edit, Info, DollarSign } from 'lucide-react';
+import { blockClientAccess, activateClientAccess, updateClient } from '../services/api';
 
 const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefresh, onViewClient, filterMonth, setFilterMonth, filterYear, setFilterYear }) => {
   const [loading, setLoading] = useState(false);
@@ -16,21 +16,6 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error('Error toggling client status:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePayment = async (client) => {
-    setLoading(true);
-    try {
-      const response = await payerAbonnement(client.id);
-      console.log('Paiement effectué:', response);
-      alert(`Paiement de ${client.prix} effectué avec succès pour ${client.nom}!`);
-      if (onRefresh) onRefresh();
-    } catch (error) {
-      console.error('Erreur lors du paiement:', error);
-      alert('Erreur lors du traitement du paiement. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -216,25 +201,6 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
                     >
                       <Edit size={14} style={{ marginRight: '0.25rem' }} />
                       Edit
-                    </button>
-                    <button
-                      onClick={() => handlePayment(client)}
-                      className="btn btn-success"
-                      style={{ 
-                        padding: '0.5rem 1rem',
-                        background: '#10b981',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}
-                      disabled={loading}
-                    >
-                      <CreditCard size={14} />
-                      PAYE
                     </button>
                   </div>
                 </td>
