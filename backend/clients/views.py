@@ -43,6 +43,8 @@ class ClientViewSet(viewsets.ModelViewSet):
             }, status=500)
     
     def create(self, request, *args, **kwargs):
+        logger.info(f"POST /api/clients/ - Request data: {request.data}")
+        
         try:
             # Créer le client avec les données du formulaire
             client_data = {
@@ -56,25 +58,35 @@ class ClientViewSet(viewsets.ModelViewSet):
                 'date_fin': request.data.get('date_fin'),
             }
             
+            logger.info(f"Processed client data: {client_data}")
+            
             serializer = self.get_serializer(data=client_data)
+            logger.info(f"Serializer created: {serializer.__class__.__name__}")
+            
             if serializer.is_valid():
+                logger.info("Serializer is valid, saving client...")
                 client = serializer.save()
+                logger.info(f"Client created successfully: {client.id} - {client.nom}")
                 
                 # Créer l'abonnement si les dates sont fournies
                 if client_data.get('date_debut') and client_data.get('date_fin'):
                     try:
+                        logger.info(f"Creating subscription for client {client.id}")
                         Subscription.objects.create(
                             client=client,
                             date_debut=client_data['date_debut'],
                             date_fin=client_data['date_fin'],
                             est_actif=True
                         )
+                        logger.info("Subscription created successfully")
                     except Exception as e:
                         logger.error(f"Error creating subscription: {str(e)}")
                 
                 headers = self.get_success_headers(serializer.data)
+                logger.info("Returning 201 Created response")
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             else:
+                logger.warning(f"Serializer validation failed: {serializer.errors}")
                 return Response({
                     'error': 'Validation error',
                     'message': 'Erreur de validation des données du client',
@@ -82,7 +94,7 @@ class ClientViewSet(viewsets.ModelViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
-            logger.error(f"Error creating client: {str(e)}")
+            logger.error(f"Error creating client: {str(e)}", exc_info=True)
             return Response({
                 'error': 'Server error',
                 'message': 'Erreur lors de la création du client',
