@@ -303,6 +303,20 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
               <DollarSign size={18} />
               Gérer Paiement
             </button>
+            
+            <button 
+              onClick={() => {
+                if (window.confirm(`Voulez-vous vraiment étendre l\'abonnement de ${client.nom} d\'un mois?`)) {
+                  // Appeler la fonction de paiement
+                  onManagePayment && onManagePayment(client, 'extend');
+                }
+              }}
+              className="btn btn-primary"
+              style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <CreditCard size={18} />
+              PAYE
+            </button>
           </>
         )}
       </div>

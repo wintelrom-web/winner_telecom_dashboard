@@ -114,6 +114,52 @@ class ClientViewSet(viewsets.ModelViewSet):
         client.statut = 'actif'
         client.save()
         return Response({'status': 'client activé'})
+    
+    @action(detail=True, methods=['post'])
+    def payer(self, request, pk=None):
+        try:
+            client = self.get_object()
+            
+            # Récupérer ou créer l'abonnement
+            subscription, created = Subscription.objects.get_or_create(
+                client=client,
+                defaults={
+                    'date_debut': timezone.now().date(),
+                    'date_fin': timezone.now().date(),
+                    'est_actif': True
+                }
+            )
+            
+            # Étendre l'abonnement d'un mois à partir de la date de fin actuelle
+            from datetime import timedelta
+            if subscription.date_fin:
+                nouvelle_date_fin = subscription.date_fin + timedelta(days=30)
+            else:
+                nouvelle_date_fin = timezone.now().date() + timedelta(days=30)
+            
+            subscription.date_fin = nouvelle_date_fin
+            subscription.est_actif = True
+            subscription.save()
+            
+            # Mettre à jour le statut du client
+            client.statut = 'actif'
+            client.save()
+            
+            return Response({
+                'status': 'paiement effectué',
+                'message': f'Abonnement étendu jusqu\'au {nouvelle_date_fin.strftime("%d/%m/%Y")}',
+                'nouvelle_date_fin': nouvelle_date_fin,
+                'client_nom': client.nom,
+                'client_matricule': client.matricule
+            })
+            
+        except Exception as e:
+            logger.error(f"Error processing payment for client {pk}: {str(e)}")
+            return Response({
+                'error': 'Erreur lors du paiement',
+                'message': 'Impossible de traiter le paiement',
+                'details': str(e)
+            }, status=500)
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.select_related('client').all()

@@ -147,9 +147,26 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
-  const handleManagePayment = (client) => {
-    // Ouvrir une modal de paiement ou rediriger vers une page de paiement
-    alert(`Gestion du paiement pour ${client.nom} - Fonctionnalité à implémenter`);
+  const handleManagePayment = async (client, action = 'manage') => {
+    try {
+      if (action === 'extend') {
+        // Utiliser la fonction API pour étendre l'abonnement
+        const { payerAbonnement } = await import('../services/api');
+        const result = await payerAbonnement(client.id);
+        
+        // Afficher le message de succès
+        alert(`${result.message}\n\nClient: ${result.client_nom}\nMatricule: ${result.client_matricule}\nNouvelle date de fin: ${result.nouvelle_date_fin}`);
+        
+        // Rafraîchir les données
+        fetchData();
+      } else {
+        // Ouvrir une modal de paiement ou rediriger vers une page de paiement
+        alert(`Gestion du paiement pour ${client.nom} - Fonctionnalité à implémenter`);
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Erreur lors du traitement du paiement. Veuillez réessayer.');
+    }
   };
 
   const handleCardClick = (cardId) => {

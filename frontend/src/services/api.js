@@ -125,3 +125,13 @@ export const deleteClient = async (clientId) => {
     throw error;
   }
 };
+
+export const payerAbonnement = async (clientId) => {
+  try {
+    const response = await api.post(`/clients/${clientId}/payer/`);
+    return response.data;
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    throw error;
+  }
+};
