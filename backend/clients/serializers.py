@@ -14,6 +14,26 @@ class ClientSerializer(serializers.ModelSerializer):
         # La photo n'est plus obligatoire avec URLField
         return data
     
+    def create(self, validated_data):
+        # Extraire date_debut et date_fin des données validées
+        date_debut = validated_data.pop('date_debut', None)
+        date_fin = validated_data.pop('date_fin', None)
+        
+        # Créer le client sans les champs d'abonnement
+        client = Client.objects.create(**validated_data)
+        
+        # Créer l'abonnement si les dates sont fournies
+        if date_debut and date_fin:
+            from .models import Subscription
+            Subscription.objects.create(
+                client=client,
+                date_debut=date_debut,
+                date_fin=date_fin,
+                est_actif=True
+            )
+        
+        return client
+    
     def get_subscription(self, obj):
         try:
             subscription = obj.subscription
