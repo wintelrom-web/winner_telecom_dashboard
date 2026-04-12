@@ -208,7 +208,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           className="form-input"
           required
         />
-        small>Saisir un matricule unique (ex: WT202600001)</small>
+        <small>Saisir un matricule unique (ex: WT202600001)</small>
       </div>
 
       <div className="form-group">
