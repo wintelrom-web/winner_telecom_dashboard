@@ -120,44 +120,37 @@ class ClientViewSet(viewsets.ModelViewSet):
         try:
             client = self.get_object()
             
-            # Récupérer ou créer l'abonnement
-            subscription, created = Subscription.objects.get_or_create(
+            # Vérifier si le client a déjà un abonnement actif
+            if not hasattr(client, 'subscription') or not client.subscription:
+                return Response({
+                    'error': 'Ce client n\'a pas d\'abonnement actif',
+                    'message': 'Veuillez d\'abord créer un abonnement pour ce client'
+                }, status=400)
+            
+            subscription = client.subscription
+            
+            # Vérifier si l'abonnement est expiré
+            if subscription.est_expiré:
+                return Response({
+                    'error': 'Abonnement expiré',
+                    'message': 'Veuillez d\'abord renouveler l\'abonnement de ce client'
+                }, status=400)
+            
+            # Vérifier si le client a déjà payé pour ce mois
+            current_month = timezone.now().month
+            current_year = timezone.now().year
+            
+            existing_payment = Payment.objects.filter(
                 client=client,
-                defaults={
-                    'date_debut': timezone.now().date(),
-                    'date_fin': timezone.now().date(),
-                    'est_actif': True
-                }
-            )
+                month=current_month,
+                year=current_year
+            ).first()
             
-            # Étendre l'abonnement d'un mois à partir de la date de fin actuelle
-            from datetime import timedelta
-            if subscription.date_fin:
-                nouvelle_date_fin = subscription.date_fin + timedelta(days=30)
-            else:
-                nouvelle_date_fin = timezone.now().date() + timedelta(days=30)
-            
-            subscription.date_fin = nouvelle_date_fin
-            subscription.est_actif = True
-            subscription.save()
-            
-            # Mettre à jour le statut du client
-            client.statut = 'actif'
-            client.save()
-            
-            # Créer un enregistrement de paiement
-            from .models import Payment
-            from .serializers import PaymentSerializer
-            
-            # Extraire le montant du prix du client
-            amount_map = {
-                '1Mo 5000F': 5000,
-                'Access 10000F': 10000,
-                'Premium 15000F': 15000,
-                'VIP 20000F': 20000
-            }
-            
-            amount = amount_map.get(client.prix, 5000)  # Default 5000F
+            if existing_payment:
+                return Response({
+                    'error': 'Paiement déjà effectué',
+                    'message': f'{client.nom} a déjà payé pour le mois de {timezone.now().strftime("%B %Y")}'
+                }, status=400)
             
             # Déterminer le type d'abonnement
             type_map = {
