@@ -46,7 +46,14 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
   };
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ 
+      padding: '1.5rem', 
+      maxWidth: '800px', 
+      margin: '0 auto',
+      position: 'relative',
+      zIndex: '10',
+      backgroundColor: '#ffffff'
+    }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
         <button 
