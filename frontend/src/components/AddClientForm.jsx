@@ -50,6 +50,10 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       }
     }
 
+    // Log pour déboguer la sélection du prix
+    if (name === 'prix') {
+      console.log('Prix sélectionné:', value);
+    }
     
     setFormData({
       ...formData,
