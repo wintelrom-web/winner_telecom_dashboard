@@ -12,7 +12,7 @@ class Client(models.Model):
     quartier = models.CharField(max_length=100)
     nom = models.CharField(max_length=200)
     telephone = models.CharField(max_length=20)
-    photo = models.ImageField(upload_to='clients_photos/', blank=True, null=True)
+    photo_url = models.URLField(max_length=500, blank=True, null=True)
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
     date_creation = models.DateTimeField(auto_now_add=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)
