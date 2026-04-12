@@ -43,27 +43,51 @@ class ClientViewSet(viewsets.ModelViewSet):
             }, status=500)
     
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        client = serializer.save()
-        
-        # Create subscription if echeance is provided
-        echeance = request.data.get('echeance')
-        if echeance:
-            from datetime import datetime
-            try:
-                date_fin = datetime.strptime(echeance, '%Y-%m-%d').date()
-                Subscription.objects.create(
-                    client=client,
-                    date_debut=timezone.now().date(),
-                    date_fin=date_fin,
-                    est_actif=True
-                )
-            except ValueError:
-                pass  # Invalid date format, skip subscription creation
-        
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        try:
+            # Créer le client avec les données du formulaire
+            client_data = {
+                'matricule': request.data.get('matricule'),
+                'quartier': request.data.get('quartier'),
+                'nom': request.data.get('nom'),
+                'telephone': request.data.get('telephone'),
+                'photo_url': request.data.get('photo_url', ''),
+                'statut': request.data.get('statut', 'actif'),
+                'date_debut': request.data.get('date_debut'),
+                'date_fin': request.data.get('date_fin'),
+            }
+            
+            serializer = self.get_serializer(data=client_data)
+            if serializer.is_valid():
+                client = serializer.save()
+                
+                # Créer l'abonnement si les dates sont fournies
+                if client_data.get('date_debut') and client_data.get('date_fin'):
+                    try:
+                        Subscription.objects.create(
+                            client=client,
+                            date_debut=client_data['date_debut'],
+                            date_fin=client_data['date_fin'],
+                            est_actif=True
+                        )
+                    except Exception as e:
+                        logger.error(f"Error creating subscription: {str(e)}")
+                
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            else:
+                return Response({
+                    'error': 'Validation error',
+                    'message': 'Erreur de validation des données du client',
+                    'details': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            logger.error(f"Error creating client: {str(e)}")
+            return Response({
+                'error': 'Server error',
+                'message': 'Erreur lors de la création du client',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=True, methods=['post'])
     def bloquer_acces(self, request, pk=None):
