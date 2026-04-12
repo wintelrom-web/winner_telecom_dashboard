@@ -135,6 +135,7 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
               <th>Quartier</th>
               <th>Nom</th>
               <th>Téléphone</th>
+              <th>Prix</th>
               <th>Statut</th>
               <th>Échéance</th>
               <th>Actions</th>
@@ -147,6 +148,18 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
                 <td>{client.quartier}</td>
                 <td>{client.nom}</td>
                 <td>{client.telephone}</td>
+                <td>
+                  <span style={{
+                    background: '#f3f4f6',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '4px',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: '#374151'
+                  }}>
+                    {client.prix || 'N/A'}
+                  </span>
+                </td>
                 <td>
                   <button
                     onClick={() => toggleClientStatus(client.id, client.statut)}

@@ -190,6 +190,17 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
           </div>
         </div>
 
+        {/* Prix */}
+        <div style={styles.infoCard}>
+          <div style={{...styles.iconBox, background: '#fef3c7', color: '#f59e0b'}}>
+            <DollarSign size={24} />
+          </div>
+          <div>
+            <label style={styles.label}>Prix</label>
+            <p style={styles.value}>{client.prix || 'N/A'}</p>
+          </div>
+        </div>
+
         {/* Date de création */}
         <div style={styles.infoCard}>
           <div style={{...styles.iconBox, background: '#fef3c7', color: '#f59e0b'}}>
