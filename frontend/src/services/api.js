@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+// Configuration API pour différents environnements
+const getApiBaseUrl = () => {
+  if (import.meta.env.PROD) {
+    // En production, utiliser l'URL du backend déployé
+    return 'https://winner-telecom-dashboard-best.onrender.com/api';
+  } else {
+    // En développement, utiliser le proxy local
+    return '/api';
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
