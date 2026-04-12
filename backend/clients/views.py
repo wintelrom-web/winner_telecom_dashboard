@@ -3,12 +3,34 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from django.db import DatabaseError
+import logging
 from .models import Client, Subscription
 from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer
+
+logger = logging.getLogger(__name__)
 
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except DatabaseError as e:
+            logger.error(f"Database error in ClientViewSet.list: {str(e)}")
+            return Response({
+                'error': 'Database error',
+                'message': 'Impossible de récupérer les clients - erreur de base de données',
+                'details': str(e)
+            }, status=500)
+        except Exception as e:
+            logger.error(f"Unexpected error in ClientViewSet.list: {str(e)}")
+            return Response({
+                'error': 'Server error',
+                'message': 'Erreur inattendue lors de la récupération des clients',
+                'details': str(e)
+            }, status=500)
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -53,24 +75,39 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
 class DashboardStatsViewSet(viewsets.ViewSet):
     def list(self, request):
-        total_clients = Client.objects.count()
-        abonnements_actifs = Subscription.objects.filter(est_actif=True, date_fin__gte=timezone.now().date()).count()
-        expirés = Subscription.objects.filter(date_fin__lt=timezone.now().date()).count()
-        
-        # Échéances proches: count subscriptions ending on the 30th or 31st of any month
-        # This alerts when payment/echeance is due at month end
-        today = timezone.now().date()
-        échéances_proches = Subscription.objects.filter(
-            date_fin__gt=today,
-            date_fin__day__in=[30, 31]
-        ).count()
-        
-        stats = {
-            'total_clients': total_clients,
-            'abonnements_actifs': abonnements_actifs,
-            'expirés': expirés,
-            'échéances_proches': échéances_proches
-        }
-        
-        serializer = DashboardStatsSerializer(stats)
-        return Response(serializer.data)
+        try:
+            total_clients = Client.objects.count()
+            abonnements_actifs = Subscription.objects.filter(est_actif=True, date_fin__gte=timezone.now().date()).count()
+            expirés = Subscription.objects.filter(date_fin__lt=timezone.now().date()).count()
+            
+            # Échéances proches: count subscriptions ending on the 30th or 31st of any month
+            # This alerts when payment/echeance is due at month end
+            today = timezone.now().date()
+            échéances_proches = Subscription.objects.filter(
+                date_fin__gt=today,
+                date_fin__day__in=[30, 31]
+            ).count()
+            
+            stats = {
+                'total_clients': total_clients,
+                'abonnements_actifs': abonnements_actifs,
+                'expirés': expirés,
+                'échéances_proches': échéances_proches
+            }
+            
+            serializer = DashboardStatsSerializer(stats)
+            return Response(serializer.data)
+        except DatabaseError as e:
+            logger.error(f"Database error in DashboardStatsViewSet.list: {str(e)}")
+            return Response({
+                'error': 'Database error',
+                'message': 'Impossible de récupérer les statistiques - erreur de base de données',
+                'details': str(e)
+            }, status=500)
+        except Exception as e:
+            logger.error(f"Unexpected error in DashboardStatsViewSet.list: {str(e)}")
+            return Response({
+                'error': 'Server error',
+                'message': 'Erreur inattendue lors de la récupération des statistiques',
+                'details': str(e)
+            }, status=500)
