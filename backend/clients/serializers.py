@@ -8,11 +8,10 @@ class ClientSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Client
-        fields = ['id', 'matricule', 'quartier', 'nom', 'telephone', 'photo', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
+        fields = ['id', 'matricule', 'quartier', 'nom', 'telephone', 'photo_url', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
     
     def validate(self, data):
-        if not data.get('photo'):
-            raise serializers.ValidationError("La photo du client est obligatoire")
+        # La photo n'est plus obligatoire avec URLField
         return data
     
     def get_subscription(self, obj):
