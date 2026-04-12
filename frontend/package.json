@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit": "npm audit --force",
+    "audit-fix": "npm audit fix --force"
   },
   "dependencies": {
     "axios": "^1.7.7",
