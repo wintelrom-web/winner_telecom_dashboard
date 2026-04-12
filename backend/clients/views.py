@@ -16,20 +16,30 @@ class ClientViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
+            # Vérifier si la table clients existe et contient des données
+            if not Client.objects.exists():
+                return Response({
+                    'clients': [],
+                    'message': 'Aucun client trouvé - base de données vide',
+                    'total': 0
+                }, status=200)
+            
             return super().list(request, *args, **kwargs)
         except DatabaseError as e:
             logger.error(f"Database error in ClientViewSet.list: {str(e)}")
             return Response({
                 'error': 'Database error',
                 'message': 'Impossible de récupérer les clients - erreur de base de données',
-                'details': str(e)
+                'details': str(e),
+                'clients': []
             }, status=500)
         except Exception as e:
             logger.error(f"Unexpected error in ClientViewSet.list: {str(e)}")
             return Response({
                 'error': 'Server error',
                 'message': 'Erreur inattendue lors de la récupération des clients',
-                'details': str(e)
+                'details': str(e),
+                'clients': []
             }, status=500)
     
     def create(self, request, *args, **kwargs):
