@@ -117,21 +117,51 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
             <h1 style={{ margin: 0, fontSize: '1.75rem' }}>{client.nom}</h1>
             <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>{client.matricule}</p>
           </div>
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-            padding: '0.5rem 1rem',
-            borderRadius: '9999px',
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            textTransform: 'uppercase',
-            background: 'rgba(255,255,255,0.2)',
-            color: 'white'
-          }}>
-            {getStatusIcon(client.statut)}
-            {client.statut}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.5rem 1rem',
+              borderRadius: '9999px',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              background: 'rgba(255,255,255,0.2)',
+              color: 'white'
+            }}>
+              {getStatusIcon(client.statut)}
+              {client.statut}
+            </span>
+            
+            <button 
+              onClick={() => {
+                if (window.confirm(`Voulez-vous vraiment étendre l'abonnement de ${client.nom} d'un mois?`)) {
+                  // Appeler la fonction de paiement
+                  onManagePayment && onManagePayment(client, 'extend');
+                }
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: '#10b981',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#059669'}
+              onMouseOut={(e) => e.target.style.background = '#10b981'}
+            >
+              <CreditCard size={18} />
+              PAYE
+            </button>
+          </div>
         </div>
       </div>
 
@@ -290,32 +320,6 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
             >
               {client.subscription.est_actif ? <ShieldOff size={18} /> : <Shield size={18} />}
               {client.subscription.est_actif ? 'Bloquer' : 'Activer'}
-            </button>
-            
-            <button 
-              onClick={() => {
-                // Ouvrir la modal de paiement
-                onManagePayment && onManagePayment(client);
-              }}
-              className="btn btn-secondary"
-              style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <DollarSign size={18} />
-              Gérer Paiement
-            </button>
-            
-            <button 
-              onClick={() => {
-                if (window.confirm(`Voulez-vous vraiment étendre l\'abonnement de ${client.nom} d\'un mois?`)) {
-                  // Appeler la fonction de paiement
-                  onManagePayment && onManagePayment(client, 'extend');
-                }
-              }}
-              className="btn btn-primary"
-              style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <CreditCard size={18} />
-              PAYE
             </button>
           </>
         )}
