@@ -1,12 +1,21 @@
 import React from 'react';
 import { Menu, User, LogOut } from 'lucide-react';
 
-const Header = ({ onLogout }) => {
+const Header = ({ onLogout, onGoHome }) => {
+  const handleLogoClick = () => {
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      // Fallback: reload the page to go to home
+      window.location.href = '/';
+    }
+  };
+
   return (
     <header className="header">
       <div className="container">
         <div className="header-content">
-          <div className="logo-container">
+          <div className="logo-container" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
             <div className="logo">
               <img src="/LOGO WINNER.jpg" alt="Logo Winner Telecom" />
 

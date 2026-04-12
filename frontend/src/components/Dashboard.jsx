@@ -143,6 +143,10 @@ const Dashboard = ({ onLogout }) => {
     setCurrentView('dashboard');
   };
 
+  const handleGoHome = () => {
+    setCurrentView('dashboard');
+  };
+
   const handleViewClient = (client) => {
     setViewingClient(client);
     setCurrentView('info');
@@ -248,7 +252,7 @@ const Dashboard = ({ onLogout }) => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
-      <Header onLogout={onLogout} />
+      <Header onLogout={onLogout} onGoHome={handleGoHome} />
       <div className="container" style={{ padding: '1.5rem 1rem' }}>
         {editingClient ? (
           <Edit 
