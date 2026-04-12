@@ -29,6 +29,8 @@ const Dashboard = ({ onLogout }) => {
     settings: false
   });
   const [filterStatus, setFilterStatus] = useState(null);
+  const [filterMonth, setFilterMonth] = useState('');
+  const [filterYear, setFilterYear] = useState('');
   const [darkMode, setDarkMode] = useState(false);
 
   const fetchData = async () => {
@@ -75,10 +77,24 @@ const Dashboard = ({ onLogout }) => {
     // Then apply status filter from card click
     if (!matchesSearch) return false;
     
-    if (filterStatus === null) return true;
-    if (filterStatus === 'actif') return client.statut === 'actif';
-    if (filterStatus === 'expiré') return client.statut === 'expiré';
-    if (filterStatus === 'échéance') return client.subscription?.échéance_proche === true;
+    // Apply status filter
+    if (filterStatus === 'actif' && client.statut !== 'actif') return false;
+    if (filterStatus === 'expiré' && client.statut !== 'expiré') return false;
+    if (filterStatus === 'échéance' && !client.subscription?.échéance_proche) return false;
+    
+    // Apply month filter
+    if (filterMonth) {
+      const clientMonth = client.subscription?.date_fin ? 
+        new Date(client.subscription.date_fin).getMonth() + 1 : null;
+      if (clientMonth !== parseInt(filterMonth)) return false;
+    }
+    
+    // Apply year filter
+    if (filterYear) {
+      const clientYear = client.subscription?.date_fin ? 
+        new Date(client.subscription.date_fin).getFullYear() : null;
+      if (clientYear !== parseInt(filterYear)) return false;
+    }
     
     return true;
   }) : [];
@@ -244,6 +260,10 @@ const Dashboard = ({ onLogout }) => {
                   onEditClient={handleEditClient}
                   onRefresh={fetchData}
                   onViewClient={handleViewClient}
+                  filterMonth={filterMonth}
+                  setFilterMonth={setFilterMonth}
+                  filterYear={filterYear}
+                  setFilterYear={setFilterYear}
                 />
               </div>
             )}

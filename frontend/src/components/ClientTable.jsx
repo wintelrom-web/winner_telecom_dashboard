@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, Filter, Edit, Info } from 'lucide-react';
 import { blockClientAccess, activateClientAccess, updateClient } from '../services/api';
 
-const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefresh, onViewClient }) => {
+const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefresh, onViewClient, filterMonth, setFilterMonth, filterYear, setFilterYear }) => {
   const [loading, setLoading] = useState(false);
 
   const toggleClientStatus = async (clientId, currentStatus) => {
@@ -66,12 +66,64 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
               style={{ paddingLeft: '2.5rem', width: '300px' }}
             />
           </div>
-          <button 
-            className="btn btn-secondary"
-            style={{ padding: '0.75rem' }}
-          >
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <Filter size={20} />
-          </button>
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem'
+              }}
+            >
+              <option value="">Mois</option>
+              <option value="1">Janvier</option>
+              <option value="2">Février</option>
+              <option value="3">Mars</option>
+              <option value="4">Avril</option>
+              <option value="5">Mai</option>
+              <option value="6">Juin</option>
+              <option value="7">Juillet</option>
+              <option value="8">Août</option>
+              <option value="9">Septembre</option>
+              <option value="10">Octobre</option>
+              <option value="11">Novembre</option>
+              <option value="12">Décembre</option>
+            </select>
+            
+            <select
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem'
+              }}
+            >
+              <option value="">Année</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+            
+            {(filterMonth || filterYear) && (
+              <button
+                onClick={() => {
+                  setFilterMonth('');
+                  setFilterYear('');
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '0.5rem', fontSize: '0.75rem' }}
+              >
+                Effacer
+              </button>
+            )}
+          </div>
         </div>
       </div>
       
