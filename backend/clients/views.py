@@ -204,6 +204,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
 
 class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     filterset_fields = ['month', 'year', 'type', 'client']
     
