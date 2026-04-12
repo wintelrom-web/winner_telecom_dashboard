@@ -16,9 +16,21 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = [
     'winner-telecom-dashboard-best.onrender.com',
+    'winner-telecom-dashboard-frontend.onrender.com',
     'localhost',
     '127.0.0.1'
 ]
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    'https://winner-telecom-dashboard-frontend.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',

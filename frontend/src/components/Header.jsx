@@ -8,7 +8,7 @@ const Header = ({ onLogout }) => {
         <div className="header-content">
           <div className="logo-container">
             <div className="logo">
-              <img src="/src/assets/logo-winner.jpg" alt="Logo Winner Telecom" />
+              <img src="/logo-winner.jpg" alt="Logo Winner Telecom" />
             </div>
             <h1 className="company-name">WINNER TELECOM</h1>
             <span className="subtitle">GESTION CLIENTS</span>
