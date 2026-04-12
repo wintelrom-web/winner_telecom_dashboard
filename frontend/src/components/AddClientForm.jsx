@@ -140,7 +140,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         nom: '',
         telephone: '',
         quartier: '',
-        prix: '1Mo 5000F',
+        prix: '1Mo 5000F', // Garder le prix par défaut après création
         date_debut: '',
         date_fin: '',
         image: null

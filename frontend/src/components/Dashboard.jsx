@@ -307,6 +307,17 @@ const Dashboard = ({ onLogout }) => {
                 <Reports />
               </div>
             )}
+            {currentView === 'info' && viewingClient && (
+              <Info 
+                client={viewingClient}
+                onBack={handleBackFromInfo}
+                onEdit={handleEditClient}
+                onBlockAccess={handleBlockAccess}
+                onActivateAccess={handleActivateAccess}
+                onManagePayment={handleManagePayment}
+                onRefresh={fetchData}
+              />
+            )}
           </>
         )}
       </div>
