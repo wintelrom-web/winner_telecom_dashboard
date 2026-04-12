@@ -134,14 +134,15 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
       
-      // Reset form and generate new matricule
+      // Reset form
       const year = new Date().getFullYear();
       const random = Math.floor(Math.random() * 90000) + 10000;
       setFormData({
-        matricule: `WT${year}${random}`,
+        matricule: '',
         nom: '',
         telephone: '',
         quartier: '',
+        prix: '1Mo 5000F',
         date_debut: '',
         date_fin: '',
         image: null
