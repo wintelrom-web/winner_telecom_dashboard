@@ -93,9 +93,9 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
             overflow: 'hidden',
             position: 'relative'
           }}>
-            {client.photo ? (
+            {client.photo_url ? (
               <img 
-                src={client.photo} 
+                src={client.photo_url} 
                 alt={client.nom}
                 style={{
                   width: '100%',
