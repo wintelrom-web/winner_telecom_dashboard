@@ -3,8 +3,8 @@ from .models import Client, Subscription
 
 class ClientSerializer(serializers.ModelSerializer):
     subscription = serializers.SerializerMethodField()
-    date_debut = serializers.DateField(write_only=True, required=True)
-    date_fin = serializers.DateField(write_only=True, required=True)
+    date_debut = serializers.DateField(write_only=True, required=False)
+    date_fin = serializers.DateField(write_only=True, required=False)
     
     class Meta:
         model = Client
