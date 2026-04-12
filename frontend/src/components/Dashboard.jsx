@@ -148,8 +148,19 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const handleViewClient = (client) => {
-    setViewingClient(client);
-    setCurrentView('info');
+    try {
+      console.log('Navigating to client info for:', client);
+      if (!client || !client.id) {
+        console.error('Invalid client data:', client);
+        alert('Erreur: Données du client invalides');
+        return;
+      }
+      setViewingClient(client);
+      setCurrentView('info');
+    } catch (error) {
+      console.error('Error navigating to client info:', error);
+      alert('Erreur lors de l\'affichage des informations du client');
+    }
   };
 
   const handleBackFromInfo = () => {
