@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db import DatabaseError, models
 import logging
-from .models import Client, Subscription, Payment
-from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer, PaymentSerializer
+from .models import Client, Subscription
+from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class ClientViewSet(viewsets.ModelViewSet):
         return Response({'status': 'client activé'})
     
     @action(detail=True, methods=['post'])
-    def payer(self, request, pk=None):
+    def etendre_abonnement(self, request, pk=None):
         try:
             client = self.get_object()
             
@@ -129,14 +129,7 @@ class ClientViewSet(viewsets.ModelViewSet):
             
             subscription = client.subscription
             
-            # Vérifier si l'abonnement est expiré
-            if subscription.est_expiré:
-                return Response({
-                    'error': 'Abonnement expiré',
-                    'message': 'Veuillez d\'abord renouveler l\'abonnement de ce client'
-                }, status=400)
-            
-            # DÉPLACER LE CLIENT D'UN MOIS À L'AUTRE
+            # Étendre l'abonnement d'un mois
             try:
                 from django.db import connection
                 with connection.cursor() as cursor:
@@ -171,7 +164,7 @@ class ClientViewSet(viewsets.ModelViewSet):
                 # Continuer même si la mise à jour échoue
             
             return Response({
-                'status': 'paiement effectué',
+                'status': 'abonnement étendu',
                 'message': f'Abonnement de {client.nom} étendu avec succès pour un mois supplémentaire',
                 'client_nom': client.nom,
                 'client_matricule': client.matricule,
@@ -179,46 +172,16 @@ class ClientViewSet(viewsets.ModelViewSet):
             })
             
         except Exception as e:
-            logger.error(f"Error processing payment for client {pk}: {str(e)}")
+            logger.error(f"Error extending subscription for client {pk}: {str(e)}")
             return Response({
-                'error': 'Erreur lors du paiement',
-                'message': 'Impossible de traiter le paiement',
+                'error': 'Erreur lors de l\'extension',
+                'message': 'Impossible d\'étendre l\'abonnement',
                 'details': str(e)
             }, status=500)
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.select_related('client').all()
     serializer_class = SubscriptionSerializer
-
-class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-    filterset_fields = ['month', 'year', 'type', 'client']
-    
-    def get_queryset(self):
-        try:
-            queryset = Payment.objects.select_related('client').all().order_by('-payment_date')
-            month = self.request.query_params.get('month')
-            year = self.request.query_params.get('year')
-            
-            if month:
-                queryset = queryset.filter(month=month)
-            if year:
-                queryset = queryset.filter(year=year)
-                
-            return queryset
-        except Exception as e:
-            logger.error(f"Error in PaymentViewSet.get_queryset: {str(e)}")
-            # Return empty queryset if there's an error
-            return Payment.objects.none()
-    
-    def list(self, request, *args, **kwargs):
-        try:
-            return super().list(request, *args, **kwargs)
-        except Exception as e:
-            logger.error(f"Error in PaymentViewSet.list: {str(e)}")
-            # Return empty list if there's an error
-            return Response([], status=200)
 
 class DashboardStatsViewSet(viewsets.ViewSet):
     def list(self, request):
@@ -241,22 +204,11 @@ class DashboardStatsViewSet(viewsets.ViewSet):
                 est_actif=True
             ).count()
             
-            # Calculer le total des paiements avec gestion d'erreur
-            try:
-                total_versements = Payment.objects.aggregate(
-                    total=models.Sum('amount')
-                )['total'] or 0
-            except Exception as e:
-                # Si la colonne amount n'existe pas, retourner 0
-                logger.error(f"Error calculating total_versements: {str(e)}")
-                total_versements = 0
-            
             stats = {
                 'total_clients': total_clients,
                 'abonnements_actifs': abonnements_actifs,
                 'expirés': expirés,
-                'échéances_proches': échéances_proches,
-                'total_versements': total_versements
+                'échéances_proches': échéances_proches
             }
             
             serializer = DashboardStatsSerializer(stats)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Subscription, Payment
+from .models import Client, Subscription
 
 class ClientSerializer(serializers.ModelSerializer):
     subscription = serializers.SerializerMethodField()
@@ -48,11 +48,6 @@ class ClientSerializer(serializers.ModelSerializer):
         except Subscription.DoesNotExist:
             return None
 
-class PaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Payment
-        fields = ['id', 'client', 'username', 'amount', 'type', 'payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
-        read_only_fields = ['payment_date', 'month', 'year', 'day', 'formatted_date', 'formatted_amount']
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     client_nom = serializers.CharField(source='client.nom', read_only=True)

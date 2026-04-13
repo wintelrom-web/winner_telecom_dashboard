@@ -77,36 +77,3 @@ class Subscription(models.Model):
                 date_fin_obj = self.date_fin
             return date_fin_obj.day in [30, 31]
         return False
-
-class Payment(models.Model):
-    TYPE_CHOICES = [
-        ('1Mo', '1Mo Classic'),
-        ('Access', 'Access'),
-        ('Premium', 'Premium'),
-        ('VIP', 'VIP'),
-    ]
-    
-    client = models.ForeignKey('Client', on_delete=models.CASCADE, related_name='payments')
-    username = models.CharField(max_length=200)  # Nom du client
-    amount = models.DecimalField(max_digits=10, decimal_places=2)  # Montant payé
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES)  # Type d'abonnement
-    payment_date = models.DateTimeField(auto_now_add=True)  # Date et heure du paiement
-    month = models.IntegerField()  # Mois du paiement (1-12)
-    year = models.IntegerField()  # Année du paiement
-    day = models.IntegerField()  # Jour du paiement (1-31)
-    
-    class Meta:
-        ordering = ['-payment_date']
-        verbose_name = 'Paiement'
-        verbose_name_plural = 'Paiements'
-    
-    def __str__(self):
-        return f"{self.username} - {self.amount}F - {self.type} - {self.payment_date.strftime('%d/%m/%Y')}"
-    
-    @property
-    def formatted_date(self):
-        return self.payment_date.strftime('%d/%m/%Y %H:%M')
-    
-    @property
-    def formatted_amount(self):
-        return f"{int(self.amount)}F"
