@@ -22,9 +22,17 @@ const Dashboard = ({ onLogout }) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'reports', 'info'
+  const [currentView, setCurrentView] = useState(() => {
+    // Restaurer la vue sauvegardée depuis localStorage
+    const savedView = localStorage.getItem('dashboard_currentView');
+    return savedView || 'dashboard';
+  });
   const [editingClient, setEditingClient] = useState(null);
-  const [viewingClient, setViewingClient] = useState(null);
+  const [viewingClient, setViewingClient] = useState(() => {
+    // Restaurer le client visualisé depuis localStorage
+    const savedViewingClient = localStorage.getItem('dashboard_viewingClient');
+    return savedViewingClient ? JSON.parse(savedViewingClient) : null;
+  });
   const [modals, setModals] = useState({
     addClient: false,
     settings: false
@@ -33,6 +41,20 @@ const Dashboard = ({ onLogout }) => {
   const [filterMonth, setFilterMonth] = useState('');
   const [filterYear, setFilterYear] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+
+  // Sauvegarder la vue actuelle dans localStorage
+  useEffect(() => {
+    localStorage.setItem('dashboard_currentView', currentView);
+  }, [currentView]);
+
+  // Sauvegarder le client visualisé dans localStorage
+  useEffect(() => {
+    if (viewingClient) {
+      localStorage.setItem('dashboard_viewingClient', JSON.stringify(viewingClient));
+    } else {
+      localStorage.removeItem('dashboard_viewingClient');
+    }
+  }, [viewingClient]);
 
   const fetchData = async () => {
     try {

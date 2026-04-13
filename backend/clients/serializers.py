@@ -35,6 +35,29 @@ class ClientSerializer(serializers.ModelSerializer):
         
         return client
     
+    def update(self, instance, validated_data):
+        print("Données reçues dans serializer update:", validated_data)
+        # Extraire date_debut et date_fin des données validées
+        date_debut = validated_data.pop('date_debut', None)
+        date_fin = validated_data.pop('date_fin', None)
+        
+        # Mettre à jour les champs du client
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Mettre à jour l'abonnement si les dates sont fournies
+        if date_debut or date_fin:
+            from .models import Subscription
+            subscription, created = Subscription.objects.get_or_create(client=instance)
+            if date_debut:
+                subscription.date_debut = date_debut
+            if date_fin:
+                subscription.date_fin = date_fin
+            subscription.save()
+        
+        return instance
+    
     def get_subscription(self, obj):
         try:
             subscription = obj.subscription
