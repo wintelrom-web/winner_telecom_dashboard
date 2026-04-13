@@ -93,11 +93,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       setError('La date de fin est obligatoire');
       return false;
     }
-    if (!formData.image) {
-      setError('La photo du client est obligatoire');
+    if (!formData.prix) {
+      setError('Veuillez sélectionner une offre d\'abonnement');
       return false;
     }
-    return true;
+        return true;
   };
 
   const handleSubmit = async (e) => {
