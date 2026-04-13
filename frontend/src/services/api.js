@@ -128,10 +128,10 @@ export const deleteClient = async (clientId) => {
 
 export const payerAbonnement = async (clientId) => {
   try {
-    const response = await api.post(`/clients/${clientId}/payer/`);
+    const response = await api.post(`/clients/${clientId}/etendre_abonnement/`);
     return response.data;
   } catch (error) {
-    console.error('Error processing payment:', error);
+    console.error('Error extending subscription:', error);
     throw error;
   }
 };
