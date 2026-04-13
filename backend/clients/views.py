@@ -190,17 +190,16 @@ class DashboardStatsViewSet(viewsets.ViewSet):
             abonnements_actifs = Subscription.objects.filter(est_actif=True, date_fin__gte=timezone.now().date()).count()
             expirés = Subscription.objects.filter(date_fin__lt=timezone.now().date()).count()
             
-            # Échéances proches: count subscriptions ending on the 30th or 31st of any month
-            # This alerts when payment/echeance is due at month end
+            # Échéances proches: count subscriptions ending within 3 days
+            # This alerts when payment/echeance is due soon
+            from datetime import timedelta
             today = timezone.now().date()
-            current_month = today.month
-            current_year = today.year
+            three_days_from_now = today + timedelta(days=3)
             
-            # Count subscriptions ending this month on 30th or 31st
+            # Count subscriptions ending in the next 3 days
             échéances_proches = Subscription.objects.filter(
-                date_fin__year=current_year,
-                date_fin__month=current_month,
-                date_fin__day__in=[30, 31],
+                date_fin__gte=today,
+                date_fin__lte=three_days_from_now,
                 est_actif=True
             ).count()
             

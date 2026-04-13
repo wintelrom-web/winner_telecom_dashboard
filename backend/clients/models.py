@@ -59,8 +59,8 @@ class Subscription(models.Model):
     
     @property
     def échéance_proche(self):
-        # Returns True if the expiration date is on the 30th or 31st of any month
-        # This alerts when payment/echeance is due at month end
+        # Returns True if we are within 3 days of the expiration date
+        # This alerts when payment/echeance is due soon
         if self.date_fin:
             # Convertir string en date si nécessaire
             if isinstance(self.date_fin, str):
@@ -68,5 +68,10 @@ class Subscription(models.Model):
                 date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
             else:
                 date_fin_obj = self.date_fin
-            return date_fin_obj.day in [30, 31]
+            
+            from datetime import timedelta
+            aujourd_hui = timezone.now().date()
+            jours_restants = (date_fin_obj - aujourd_hui).days
+            
+            return 0 <= jours_restants <= 3
         return False

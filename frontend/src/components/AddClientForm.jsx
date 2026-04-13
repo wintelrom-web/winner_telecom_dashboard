@@ -8,7 +8,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
     nom: '',
     telephone: '',
     quartier: '',
-    prix: '1Mo 5000F',
+    prix: '',
     date_debut: '',
     date_fin: '',
     image: null
@@ -141,16 +141,15 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
       
-      // Reset form - conserver le prix sélectionné pour la prochaine création
+      // Reset form - revenir à la sélection vide
       const year = new Date().getFullYear();
       const random = Math.floor(Math.random() * 90000) + 10000;
-      const selectedPrix = formData.prix; // Sauvegarder le prix sélectionné
       setFormData({
         matricule: '',
         nom: '',
         telephone: '',
         quartier: '',
-        prix: selectedPrix, // Garder le prix sélectionné pour la prochaine fois
+        prix: '', // Revenir à la sélection vide
         date_debut: '',
         date_fin: '',
         image: null
@@ -249,6 +248,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           required
           className="form-input"
         >
+          <option value="">-- Sélectionner une offre --</option>
           <option value="1Mo 5000F">1Mo Classique - 5000F</option>
           <option value="Access 10000F">Access - 10000F</option>
           <option value="Premium 15000F">Premium - 15000F</option>
