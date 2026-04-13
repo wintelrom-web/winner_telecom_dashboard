@@ -144,7 +144,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         nom: '',
         telephone: '',
         quartier: '',
-        prix: '1Mo 5000F', // Garder le prix par défaut après création
+        prix: formData.prix, // Conserver le prix sélectionné par l'utilisateur
         date_debut: '',
         date_fin: '',
         image: null
