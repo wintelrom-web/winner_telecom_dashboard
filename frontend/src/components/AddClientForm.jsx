@@ -52,8 +52,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
     // Log pour déboguer la sélection du prix
     if (name === 'prix') {
-      console.log('Prix sélectionné:', value);
+      console.log('Prix sélectionné dans handleChange:', value);
     }
+    
+    // Log général pour tous les changements
+    console.log('FormData après changement:', { ...formData, [name]: value || '' });
     
     setFormData({
       ...formData,
@@ -133,6 +136,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         };
       }
 
+      console.log('État final du formulaire avant envoi:', formData);
       console.log('Données client envoyées:', clientData);
       await createClient(clientData);
       setSuccess('Client créé avec succès!');

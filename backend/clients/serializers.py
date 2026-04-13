@@ -11,9 +11,11 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = ['id', 'matricule', 'quartier', 'nom', 'telephone', 'prix', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
     
     def validate(self, data):
+        print("Données reçues dans serializer validate:", data)
         return data
     
     def create(self, validated_data):
+        print("Données validées dans serializer create:", validated_data)
         # Extraire date_debut et date_fin des données validées
         date_debut = validated_data.pop('date_debut', None)
         date_fin = validated_data.pop('date_fin', None)
