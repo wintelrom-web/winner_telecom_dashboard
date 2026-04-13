@@ -152,6 +152,16 @@ class ClientViewSet(viewsets.ModelViewSet):
                     'message': f'{client.nom} a déjà payé pour le mois de {timezone.now().strftime("%B %Y")}'
                 }, status=400)
             
+            # Extraire le montant du prix du client
+            amount_map = {
+                '1Mo 5000F': 5000,
+                'Access 10000F': 10000,
+                'Premium 15000F': 15000,
+                'VIP 20000F': 20000
+            }
+            
+            amount = amount_map.get(client.prix, 5000)  # Default 5000F
+            
             # Déterminer le type d'abonnement
             type_map = {
                 '1Mo 5000F': '1Mo',
