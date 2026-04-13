@@ -133,6 +133,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         };
       }
 
+      console.log('Données client envoyées:', clientData);
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
       
