@@ -15,13 +15,7 @@ const ActionButtons = ({ onAction }) => {
       action: 'fonds',
       className: 'btn-success'
     },
-    {
-      label: 'Détails Clients',
-      icon: <Users size={20} />,
-      action: 'clientDetails',
-      className: 'btn-primary'
-    },
-    {
+        {
       label: 'Rapports',
       icon: <FileText size={20} />,
       action: 'reports',
