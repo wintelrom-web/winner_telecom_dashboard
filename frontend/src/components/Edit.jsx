@@ -8,6 +8,7 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
     nom: '',
     telephone: '',
     quartier: '',
+    prix: '1Mo 5000F',
     statut: 'actif',
     date_debut: '',
     date_fin: ''
@@ -23,6 +24,7 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
         nom: client.nom || '',
         telephone: client.telephone || '',
         quartier: client.quartier || '',
+        prix: client.prix || '1Mo 5000F',
         statut: client.statut || 'actif',
         date_debut: client.subscription?.date_debut || '',
         date_fin: client.subscription?.date_fin || ''
@@ -220,6 +222,26 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
                 placeholder="Entrez le quartier"
                 required
               />
+            </div>
+
+            {/* Prix */}
+            <div className="form-group">
+              <label className="form-label">
+                <Shield size={16} style={{ marginRight: '0.5rem' }} />
+                Prix
+              </label>
+              <select
+                name="prix"
+                value={formData.prix}
+                onChange={handleChange}
+                className="form-input"
+                required
+              >
+                <option value="1Mo 5000F">1Mo 5000F</option>
+                <option value="Access 10000F">Access 10000F</option>
+                <option value="Premium 15000F">Premium 15000F</option>
+                <option value="VIP 20000F">VIP 20000F</option>
+              </select>
             </div>
 
             {/* Date début abonnement */}
