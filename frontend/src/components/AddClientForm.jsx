@@ -137,15 +137,16 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
       
-      // Reset form
+      // Reset form - conserver le prix sélectionné pour la prochaine création
       const year = new Date().getFullYear();
       const random = Math.floor(Math.random() * 90000) + 10000;
+      const selectedPrix = formData.prix; // Sauvegarder le prix sélectionné
       setFormData({
         matricule: '',
         nom: '',
         telephone: '',
         quartier: '',
-        prix: formData.prix, // Conserver le prix sélectionné par l'utilisateur
+        prix: selectedPrix, // Garder le prix sélectionné pour la prochaine fois
         date_debut: '',
         date_fin: '',
         image: null

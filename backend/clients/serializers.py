@@ -14,23 +14,12 @@ class ClientSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        # Log pour déboguer les données reçues
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Données validées reçues: {validated_data}")
-        
         # Extraire date_debut et date_fin des données validées
         date_debut = validated_data.pop('date_debut', None)
         date_fin = validated_data.pop('date_fin', None)
         
-        # Log pour voir les données avant création
-        logger.info(f"Données avant création client: {validated_data}")
-        
         # Créer le client sans les champs d'abonnement
         client = Client.objects.create(**validated_data)
-        
-        # Log pour vérifier le client créé
-        logger.info(f"Client créé avec prix: {client.prix}")
         
         # Créer l'abonnement si les dates sont fournies
         if date_debut and date_fin:
