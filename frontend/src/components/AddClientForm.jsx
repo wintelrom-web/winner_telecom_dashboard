@@ -137,6 +137,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       }
 
       console.log('État final du formulaire avant envoi:', formData);
+      console.log('Valeur spécifique de formData.prix:', formData.prix);
       console.log('Données client envoyées:', clientData);
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
