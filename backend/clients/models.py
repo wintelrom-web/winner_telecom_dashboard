@@ -12,7 +12,7 @@ class Client(models.Model):
     quartier = models.CharField(max_length=100)
     nom = models.CharField(max_length=200)
     telephone = models.CharField(max_length=20)
-    photo_url = models.URLField(max_length=500, blank=True, null=True)
+    photo = models.ImageField(upload_to='client_photos/', blank=True, null=True)
     prix = models.CharField(max_length=50, default='1Mo 5000F')
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
     date_creation = models.DateTimeField(auto_now_add=True)
@@ -20,6 +20,13 @@ class Client(models.Model):
     
     def __str__(self):
         return f"{self.matricule} - {self.nom}"
+    
+    @property
+    def photo_url(self):
+        """Retourne l'URL de la photo pour le frontend"""
+        if self.photo:
+            return self.photo.url
+        return None
     
     class Meta:
         ordering = ['-date_creation']
