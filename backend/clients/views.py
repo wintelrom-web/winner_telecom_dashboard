@@ -179,17 +179,46 @@ class ClientViewSet(viewsets.ModelViewSet):
             
             payment_type = type_map.get(client.prix, '1Mo')
             
-            # Créer le paiement avec SQL direct pour contourner les problèmes de modèle
+            # ÉTENDRE L'ABONNEMENT D'UN MOIS
             try:
                 from django.db import connection
                 with connection.cursor() as cursor:
-                    # Insérer le paiement avec les colonnes de base
+                    # Récupérer la date de fin actuelle
+                    cursor.execute("""
+                        SELECT date_fin FROM clients_subscription 
+                        WHERE client_id = %s
+                    """, [client.id])
+                    result = cursor.fetchone()
+                    
+                    if result and result[0]:
+                        current_end_date = result[0]
+                        # Ajouter un mois à la date de fin
+                        cursor.execute("""
+                            UPDATE clients_subscription 
+                            SET date_fin = %s + INTERVAL '1 month'
+                            WHERE client_id = %s
+                        """, [current_end_date, client.id])
+                    else:
+                        # Créer une nouvelle subscription si elle n'existe pas
+                        from datetime import datetime, timedelta
+                        new_end_date = datetime.now() + timedelta(days=30)
+                        cursor.execute("""
+                            INSERT INTO clients_subscription (client_id, date_debut, date_fin)
+                            VALUES (%s, NOW(), %s)
+                            ON CONFLICT (client_id) DO UPDATE
+                            SET date_fin = EXCLUDED.date_fin
+                        """, [client.id, new_end_date])
+                        
+                    # Créer le paiement pour le mois suivant
+                    next_month = current_month + 1 if current_month < 12 else 1
+                    next_year = current_year if current_month < 12 else current_year + 1
+                    
                     cursor.execute("""
                         INSERT INTO clients_payment 
                         (client_id, month, year, day, payment_date)
                         VALUES (%s, %s, %s, %s, NOW())
                         RETURNING id
-                    """, [client.id, current_month, current_year, timezone.now().day])
+                    """, [client.id, next_month, next_year, timezone.now().day])
                     payment_id = cursor.fetchone()[0]
                     
                     # Mettre à jour les autres champs si les colonnes existent
