@@ -12,7 +12,7 @@ class Client(models.Model):
     quartier = models.CharField(max_length=100)
     nom = models.CharField(max_length=200)
     telephone = models.CharField(max_length=20)
-    prix = models.CharField(max_length=50, default='1Mo 5000F')
+    prix = models.CharField(max_length=50)
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
     date_creation = models.DateTimeField(auto_now_add=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)
