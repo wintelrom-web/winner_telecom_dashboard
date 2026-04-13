@@ -9,13 +9,7 @@ const ActionButtons = ({ onAction }) => {
       action: 'addClient',
       className: 'btn-primary'
     },
-    {
-      label: 'FONDS',
-      icon: <DollarSign size={20} />,
-      action: 'fonds',
-      className: 'btn-success'
-    },
-        {
+            {
       label: 'Rapports',
       icon: <FileText size={20} />,
       action: 'reports',

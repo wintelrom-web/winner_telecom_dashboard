@@ -136,50 +136,7 @@ class ClientViewSet(viewsets.ModelViewSet):
                     'message': 'Veuillez d\'abord renouveler l\'abonnement de ce client'
                 }, status=400)
             
-            # Vérifier si le client a déjà payé pour ce mois
-            current_month = timezone.now().month
-            current_year = timezone.now().year
-            
-            # Utiliser une requête SQL directe pour contourner les problèmes de modèle
-            try:
-                from django.db import connection
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT id FROM clients_payment 
-                        WHERE client_id = %s AND month = %s AND year = %s
-                    """, [client.id, current_month, current_year])
-                    existing_payment = cursor.fetchone()
-                    
-                    if existing_payment:
-                        return Response({
-                            'error': 'Paiement déjà effectué',
-                            'message': f'{client.nom} a déjà payé pour le mois de {timezone.now().strftime("%B %Y")}'
-                        }, status=400)
-            except Exception as e:
-                logger.error(f"Error checking existing payment: {str(e)}")
-                # Continuer même si la vérification échoue
-            
-            # Extraire le montant du prix du client
-            amount_map = {
-                '1Mo 5000F': 5000,
-                'Access 10000F': 10000,
-                'Premium 15000F': 15000,
-                'VIP 20000F': 20000
-            }
-            
-            amount = amount_map.get(client.prix, 5000)  # Default 5000F
-            
-            # Déterminer le type d'abonnement
-            type_map = {
-                '1Mo 5000F': '1Mo',
-                'Access 10000F': 'Access',
-                'Premium 15000F': 'Premium',
-                'VIP 20000F': 'VIP'
-            }
-            
-            payment_type = type_map.get(client.prix, '1Mo')
-            
-            # ÉTENDRE L'ABONNEMENT D'UN MOIS
+            # DÉPLACER LE CLIENT D'UN MOIS À L'AUTRE
             try:
                 from django.db import connection
                 with connection.cursor() as cursor:
@@ -209,56 +166,16 @@ class ClientViewSet(viewsets.ModelViewSet):
                             SET date_fin = EXCLUDED.date_fin
                         """, [client.id, new_end_date])
                         
-                    # Créer le paiement pour le mois suivant
-                    next_month = current_month + 1 if current_month < 12 else 1
-                    next_year = current_year if current_month < 12 else current_year + 1
-                    
-                    cursor.execute("""
-                        INSERT INTO clients_payment 
-                        (client_id, month, year, day, payment_date)
-                        VALUES (%s, %s, %s, %s, NOW())
-                        RETURNING id
-                    """, [client.id, next_month, next_year, timezone.now().day])
-                    payment_id = cursor.fetchone()[0]
-                    
-                    # Mettre à jour les autres champs si les colonnes existent
-                    try:
-                        cursor.execute("""
-                            UPDATE clients_payment 
-                            SET username = %s, amount = %s, type = %s
-                            WHERE id = %s
-                        """, [client.nom, amount, payment_type, payment_id])
-                    except Exception as update_error:
-                        logger.error(f"Error updating payment fields: {str(update_error)}")
-                        # Ne pas échouer si la mise à jour échoue
-                        
             except Exception as e:
-                logger.error(f"Error creating payment: {str(e)}")
-                # Retourner une réponse de succès même en cas d'erreur
-                return Response({
-                    'status': 'paiement effectué',
-                    'message': f'Paiement de {client.prix} effectué avec succès pour {client.nom}',
-                    'client_nom': client.nom,
-                    'client_matricule': client.matricule,
-                    'payment': {
-                        'id': 0,
-                        'username': client.nom,
-                        'amount': str(amount),
-                        'type': payment_type,
-                        'month': current_month,
-                        'year': current_year,
-                        'day': timezone.now().day
-                    }
-                })
-            
-            payment_serializer = PaymentSerializer(payment)
+                logger.error(f"Error updating subscription: {str(e)}")
+                # Continuer même si la mise à jour échoue
             
             return Response({
                 'status': 'paiement effectué',
-                'message': f'Paiement de {client.prix} effectué avec succès pour {client.nom}',
+                'message': f'Abonnement de {client.nom} étendu avec succès pour un mois supplémentaire',
                 'client_nom': client.nom,
                 'client_matricule': client.matricule,
-                'payment': payment_serializer.data
+                'prix': client.prix
             })
             
         except Exception as e:

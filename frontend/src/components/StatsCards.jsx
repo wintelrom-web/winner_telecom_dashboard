@@ -35,15 +35,7 @@ const StatsCards = ({ stats, onCardClick }) => {
       color: '#f59e0b',
       bgColor: '#fef3c7'
     },
-    {
-      id: 'versements',
-      title: 'Total Versements',
-      value: `${(stats.total_versements || 0).toLocaleString()}F`,
-      icon: <DollarSign size={24} />,
-      color: '#10b981',
-      bgColor: '#ecfdf5'
-    }
-  ];
+      ];
 
   const handleCardClick = (cardId) => {
     if (onCardClick) {

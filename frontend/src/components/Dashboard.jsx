@@ -9,7 +9,6 @@ import Reports from './Reports';
 import Settings from './Settings';
 import Edit from './Edit';
 import Info from './Info';
-import Fonds from './Fonds';
 import { getDashboardStats, getClients, blockClientAccess, activateClientAccess } from '../services/api';
 
 const Dashboard = ({ onLogout }) => {
@@ -139,10 +138,7 @@ const Dashboard = ({ onLogout }) => {
     setEditingClient(null);
   };
 
-  const handleBackFromFonds = () => {
-    setCurrentView('dashboard');
-  };
-
+  
   const handleGoHome = () => {
     setCurrentView('dashboard');
   };
@@ -236,10 +232,7 @@ const Dashboard = ({ onLogout }) => {
       case 'addClient':
         handleOpenModal('addClient');
         break;
-      case 'fonds':
-        setCurrentView('fonds');
-        break;
-      case 'clientDetails':
+            case 'clientDetails':
         setCurrentView('dashboard');
         break;
       case 'reports':
@@ -272,8 +265,6 @@ const Dashboard = ({ onLogout }) => {
             onClientUpdated={handleClientUpdated}
             onClientDeleted={handleClientDeleted}
           />
-        ) : currentView === 'fonds' ? (
-          <Fonds onBack={handleBackFromFonds} />
         ) : (
           <>
             {currentView === 'dashboard' && (
