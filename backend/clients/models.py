@@ -41,8 +41,10 @@ class Subscription(models.Model):
             # Convertir string en date si nécessaire
             if isinstance(self.date_fin, str):
                 from datetime import datetime
-                self.date_fin = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
-            difference = self.date_fin - aujourd_hui
+                date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
+            else:
+                date_fin_obj = self.date_fin
+            difference = date_fin_obj - aujourd_hui
             return difference.days
         return 0
     
