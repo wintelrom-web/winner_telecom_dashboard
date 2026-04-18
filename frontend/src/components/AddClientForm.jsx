@@ -8,6 +8,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
     nom: '',
     telephone: '',
     quartier: '',
+    ville: 'Abidjan',
     prix: '',
     date_debut: '',
     date_fin: '',
@@ -85,6 +86,10 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       setError('Le quartier est requis');
       return false;
     }
+    if (!formData.ville.trim()) {
+      setError('La ville est requise');
+      return false;
+    }
     if (!formData.date_debut) {
       setError('La date de début est obligatoire');
       return false;
@@ -130,6 +135,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           nom: formData.nom.trim(),
           telephone: formData.telephone.trim(),
           quartier: formData.quartier.trim(),
+          ville: formData.ville.trim(),
           prix: formData.prix,
           date_debut: formData.date_debut,
           date_fin: formData.date_fin
@@ -264,6 +270,24 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           <option value="VIP 20000F">VIP - 20000F</option>
         </select>
         <small>Sélectionner l'offre d'abonnement</small>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="ville">
+          <MapPin size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          Ville *
+        </label>
+        <input
+          type="text"
+          id="ville"
+          name="ville"
+          value={formData.ville}
+          onChange={handleChange}
+          required
+          placeholder="Ex: Abidjan, Yamoussoukro..."
+          className="form-input"
+        />
+        <small>Ville de résidence du client</small>
       </div>
 
       <div className="form-group">

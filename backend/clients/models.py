@@ -10,6 +10,7 @@ class Client(models.Model):
     
     matricule = models.CharField(max_length=20, unique=True)
     quartier = models.CharField(max_length=100)
+    ville = models.CharField(max_length=100, default='Abidjan')
     nom = models.CharField(max_length=200)
     telephone = models.CharField(max_length=20)
     prix = models.CharField(max_length=50)

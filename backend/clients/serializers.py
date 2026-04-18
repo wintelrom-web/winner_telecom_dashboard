@@ -8,7 +8,7 @@ class ClientSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Client
-        fields = ['id', 'matricule', 'quartier', 'nom', 'telephone', 'prix', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
+        fields = ['id', 'matricule', 'quartier', 'ville', 'nom', 'telephone', 'prix', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
     
     def validate(self, data):
         print("Données reçues dans serializer validate:", data)
