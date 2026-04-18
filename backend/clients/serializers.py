@@ -5,6 +5,7 @@ class ClientSerializer(serializers.ModelSerializer):
     subscription = serializers.SerializerMethodField()
     date_debut = serializers.DateField(write_only=True, required=False)
     date_fin = serializers.DateField(write_only=True, required=False)
+    prix = serializers.CharField(max_length=50)
     
     class Meta:
         model = Client
