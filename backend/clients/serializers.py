@@ -11,7 +11,11 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = ['id', 'matricule', 'quartier', 'ville', 'nom', 'telephone', 'prix', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
     
     def validate(self, data):
+        print("=== DEBUG SERIALIZER VALIDATE ===")
         print("Données reçues dans serializer validate:", data)
+        print("Type de data:", type(data))
+        print("Keys dans data:", data.keys() if hasattr(data, 'keys') else 'No keys')
+        print("=====================================")
         return data
     
     def create(self, validated_data):
