@@ -138,6 +138,14 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
       console.log('État final du formulaire avant envoi:', formData);
       console.log('Valeur spécifique de formData.prix:', formData.prix);
+      
+      // Vérifier que le prix n'est pas vide
+      if (!formData.prix) {
+        setError('Veuillez sélectionner une offre d\'abonnement');
+        setLoading(false);
+        return;
+      }
+      
       console.log('Données client envoyées:', clientData);
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
