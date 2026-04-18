@@ -152,7 +152,12 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         return;
       }
       
+      console.log('=== DÉTAILS ENVOI ===');
       console.log('Données client envoyées:', clientData);
+      console.log('Type de clientData:', typeof clientData);
+      console.log('clientData.prix:', clientData.prix);
+      console.log('clientData.prix existe-t-il:', 'prix' in clientData);
+      console.log('======================');
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
       
