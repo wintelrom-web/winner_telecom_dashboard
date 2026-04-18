@@ -146,11 +146,21 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       console.log('Valeur spécifique de formData.prix:', formData.prix);
       
       // Vérifier que le prix n'est pas vide
+      console.log('=== VALIDATION PRIX ===');
+      console.log('formData.prix:', formData.prix);
+      console.log('!formData.prix:', !formData.prix);
+      console.log('Type de formData.prix:', typeof formData.prix);
+      console.log('Longueur de formData.prix:', formData.prix ? formData.prix.length : 'N/A');
+      console.log('========================');
+      
       if (!formData.prix) {
+        console.log('VALIDATION BLOQUÉE - prix vide');
         setError('Veuillez sélectionner une offre d\'abonnement');
         setLoading(false);
         return;
       }
+      
+      console.log('VALIDATION RÉUSSIE - prix présent');
       
       console.log('=== DÉTAILS ENVOI ===');
       console.log('Données client envoyées:', clientData);
