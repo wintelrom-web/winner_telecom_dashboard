@@ -128,8 +128,15 @@ class ClientViewSet(viewsets.ModelViewSet):
                 })
             
             subscription = client.subscription
-            subscription.date_debut = today
-            subscription.date_fin = today + timedelta(days=30)
+            
+            current_date_debut = subscription.date_debut
+            current_date_fin = subscription.date_fin
+            
+            new_date_debut = current_date_fin + timedelta(days=1)
+            new_date_fin = current_date_fin + timedelta(days=31)
+            
+            subscription.date_debut = new_date_debut
+            subscription.date_fin = new_date_fin
             subscription.est_actif = True
             subscription.save()
             
