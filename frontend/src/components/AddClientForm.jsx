@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createClient } from '../services/api';
-import { UserPlus, Phone, MapPin, Tag, AlertCircle, CheckCircle, Calendar, Image } from 'lucide-react';
+import { UserPlus, Phone, MapPin, Tag, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
 
 const AddClientForm = ({ onClose, onClientAdded }) => {
   const [formData, setFormData] = useState({
@@ -12,27 +12,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
     prix: '',
     date_debut: '',
     date_fin: '',
-    image: null
   });
-  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, image: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setFormData(prev => ({ ...prev, image: null }));
-    setImagePreview(null);
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -122,10 +106,8 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         ville: 'Abidjan',
         prix: '',
         date_debut: '',
-        date_fin: '',
-        image: null
+        date_fin: ''
       });
-      setImagePreview(null);
 
       setTimeout(() => {
         onClientAdded();
@@ -278,37 +260,12 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       </div>
 
       <div className="form-group">
-              <div style={{ 
-                width: '80px', 
-                height: '80px', 
-                borderRadius: '50%', 
-                backgroundColor: '#f3f4f6',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#6b7280',
-                fontSize: '14px'
-              }}>
-                <UserPlus size={24} />
-              </div>
-            <button
-              type="button"
-              onClick={removeImage}
-              style={{
-                position: 'absolute',
-                top: '-8px',
-                right: '-8px',
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '50%',
-                width: '24px',
-                height: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+        <label htmlFor="date_debut">
+          <Calendar size={16} style={{ marginRight: '0.5rem' }} />
+          Date de début *
+        </label>
+        <input
+          type="date"
           id="date_debut"
           name="date_debut"
           value={formData.date_debut}
@@ -360,9 +317,8 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
             </>
           )}
         </button>
-        </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 
