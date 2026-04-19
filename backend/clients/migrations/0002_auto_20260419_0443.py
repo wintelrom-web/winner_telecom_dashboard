@@ -16,3 +16,11 @@ class Migration(migrations.Migration):
             field=models.CharField(default='Abidjan', max_length=100),
         ),
     ]
+
+    operations = [
+        migrations.AddField(
+            model_name='client',
+            name='ville',
+            field=models.CharField(default='Abidjan', max_length=100),
+        ),
+    ]
