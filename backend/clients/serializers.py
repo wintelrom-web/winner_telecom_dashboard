@@ -6,14 +6,13 @@ class ClientSerializer(serializers.ModelSerializer):
     date_debut = serializers.DateField(write_only=True, required=False)
     date_fin = serializers.DateField(write_only=True, required=False)
     prix = serializers.CharField(max_length=50, required=False, allow_blank=True)
-    image = serializers.FileField(required=False)  # No Pillow
     
     class Meta:
         model = Client
         fields = [
             'id', 'matricule', 'quartier', 'ville', 'nom', 'telephone',
             'prix', 'statut', 'date_creation', 'date_mise_a_jour',
-            'image', 'subscription', 'date_debut', 'date_fin'
+            'subscription', 'date_debut', 'date_fin'
         ]
     
     def validate(self, data):

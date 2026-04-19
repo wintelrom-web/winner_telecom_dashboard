@@ -89,10 +89,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       setError('Veuillez sélectionner une offre d\'abonnement');
       return false;
     }
-    if (!formData.image) {
-      setError('La photo du client est obligatoire');
-      return false;
-    }
     return true;
   };
 
@@ -114,7 +110,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       clientData.append('prix', formData.prix);
       clientData.append('date_debut', formData.date_debut);
       clientData.append('date_fin', formData.date_fin);
-      clientData.append('image', formData.image);
 
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
@@ -283,35 +278,19 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       </div>
 
       <div className="form-group">
-        <label htmlFor="image">
-          <Image size={16} style={{ marginRight: '0.5rem' }} />
-                    Photo du client *
-        </label>
-        <input
-          type="file"
-          id="image"
-          name="image"
-          accept="image/*"
-          onChange={handleImageChange}
-          required
-          className="form-input"
-          style={{ padding: '0.5rem' }}
-        />
-        <small>Format: JPG, PNG (obligatoire)</small>
-        
-        {imagePreview && (
-          <div style={{ marginTop: '0.5rem', position: 'relative', display: 'inline-block' }}>
-            <img 
-              src={imagePreview} 
-              alt="Aperçu" 
-              style={{ 
+              <div style={{ 
                 width: '80px', 
                 height: '80px', 
                 borderRadius: '50%', 
-                objectFit: 'cover',
-                border: '2px solid #e5e7eb'
-              }} 
-            />
+                backgroundColor: '#f3f4f6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#6b7280',
+                fontSize: '14px'
+              }}>
+                <UserPlus size={24} />
+              </div>
             <button
               type="button"
               onClick={removeImage}
@@ -395,8 +374,9 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
             </>
           )}
         </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </div>
   );
 };
 
