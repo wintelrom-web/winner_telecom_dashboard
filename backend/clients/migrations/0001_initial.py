@@ -18,7 +18,6 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('matricule', models.CharField(max_length=20, unique=True)),
                 ('quartier', models.CharField(max_length=100)),
-                ('ville', models.CharField(default='Abidjan', max_length=100)),
                 ('nom', models.CharField(max_length=200)),
                 ('telephone', models.CharField(max_length=20)),
                 ('prix', models.CharField(max_length=50)),
