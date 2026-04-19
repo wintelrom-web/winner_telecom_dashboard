@@ -7,7 +7,6 @@ class ClientSerializer(serializers.ModelSerializer):
     date_fin = serializers.DateField(write_only=True, required=False)
     matricule = serializers.CharField(max_length=20, required=False, allow_blank=True)
     quartier = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    ville = serializers.CharField(max_length=100, required=False, allow_blank=True)
     nom = serializers.CharField(max_length=200, required=False, allow_blank=True)
     telephone = serializers.CharField(max_length=20, required=False, allow_blank=True)
     prix = serializers.CharField(max_length=50, required=False, allow_blank=True)
@@ -15,7 +14,7 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = [
-            'id', 'matricule', 'quartier', 'ville', 'nom', 'telephone',
+            'id', 'matricule', 'quartier', 'nom', 'telephone',
             'prix', 'statut', 'date_creation', 'date_mise_a_jour',
             'subscription', 'date_debut', 'date_fin'
         ]
