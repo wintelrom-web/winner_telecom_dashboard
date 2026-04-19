@@ -50,6 +50,7 @@ class ClientViewSet(viewsets.ModelViewSet):
             client_data = {
                 'matricule': request.data.get('matricule'),
                 'quartier': request.data.get('quartier'),
+                'ville': request.data.get('ville', 'Abidjan'),
                 'nom': request.data.get('nom'),
                 'telephone': request.data.get('telephone'),
                 'prix': request.data.get('prix', ''),
