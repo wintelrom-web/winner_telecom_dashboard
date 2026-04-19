@@ -309,20 +309,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
-            >
-              ×
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="date_debut">
-          <Calendar size={16} style={{ marginRight: '0.5rem' }} />
-          Date de début *
-        </label>
-        <input
-          type="date"
           id="date_debut"
           name="date_debut"
           value={formData.date_debut}
