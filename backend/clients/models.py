@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.core.validators import FileExtensionValidator
 
 class Client(models.Model):
     STATUS_CHOICES = [
@@ -15,7 +16,12 @@ class Client(models.Model):
     telephone = models.CharField(max_length=20)
     prix = models.CharField(max_length=50)
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
-    image = models.ImageField(upload_to="clients/", null=True, blank=True)  # ✅ Added field
+    image = models.FileField(
+        upload_to="clients/",
+        validators=[FileExtensionValidator(allowed_extensions=['jpg','jpeg','png'])],
+        null=True,
+        blank=True
+    )  # No Pillow required
     date_creation = models.DateTimeField(auto_now_add=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)
     
