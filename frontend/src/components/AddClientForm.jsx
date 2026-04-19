@@ -125,6 +125,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         clientData.append('nom', formData.nom.trim());
         clientData.append('telephone', formData.telephone.trim());
         clientData.append('quartier', formData.quartier.trim());
+        clientData.append('ville', formData.ville.trim());
         clientData.append('prix', formData.prix);
         clientData.append('date_debut', formData.date_debut);
         clientData.append('date_fin', formData.date_fin);
