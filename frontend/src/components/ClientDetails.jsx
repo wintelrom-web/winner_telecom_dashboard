@@ -1,7 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, User, MapPin, Phone, Calendar, CreditCard, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { payerAbonnement } from '../services/api';
 
-const ClientDetails = ({ client, onClose }) => {
+const ClientDetails = ({ client, onClose, onClientUpdated }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handlePayer = async () => {
+    if (!client || !client.id) return;
+    setLoading(true);
+    try {
+      const result = await payerAbonnement(client.id);
+      alert(`Paiement effectué avec succès!\n\nClient: ${result.client_nom}\nMatricule: ${result.client_matricule}\nMontant: ${result.prix}\nDate début: ${result.date_debut}\nDate fin: ${result.date_fin}\nJours restants: ${result.jours_restants}`);
+      if (onClientUpdated) onClientUpdated();
+      onClose();
+    } catch (error) {
+      console.error('Error paying:', error);
+      alert('Erreur lors du paiement. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  };
   if (!client) return null;
 
   const formatDate = (dateString) => {
@@ -200,7 +218,7 @@ const ClientDetails = ({ client, onClose }) => {
                   borderRadius: '8px',
                   textAlign: 'center'
                 }}>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>Date début</p>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>Date fin</p>
                   <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9375rem', color: '#1f2937', fontWeight: '600' }}>
                   {formatDate(client.subscription.date_fin)}
                   </p>
@@ -225,6 +243,25 @@ const ClientDetails = ({ client, onClose }) => {
               </div>
             </div>
           )}
+
+          <button
+            onClick={handlePayer}
+            disabled={loading}
+            style={{
+              marginTop: '1.5rem',
+              width: '100%',
+              padding: '0.75rem',
+              background: loading ? '#9ca3af' : '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? 'Traitement...' : 'Payer / Renouveler'}
+          </button>
         </div>
       </div>
     </div>

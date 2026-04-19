@@ -213,17 +213,13 @@ const Dashboard = ({ onLogout }) => {
   const handleManagePayment = async (client, action = 'manage') => {
     try {
       if (action === 'extend') {
-        // Utiliser la fonction API pour étendre l'abonnement
         const { payerAbonnement } = await import('../services/api');
         const result = await payerAbonnement(client.id);
         
-        // Afficher le message de succès avec détails du paiement
-        alert(`Paiement effectué avec succès!\n\nClient: ${client.nom}\nMatricule: ${client.matricule}\nMontant: ${client.prix}\nNouvelle date de fin: ${result.nouvelle_date_fin}`);
+        alert(`Paiement effectué avec succès!\n\nClient: ${result.client_nom}\nMatricule: ${result.client_matricule}\nMontant: ${result.prix}\nDate début: ${result.date_debut}\nDate fin: ${result.date_fin}\nJours restants: ${result.jours_restants}`);
         
-        // Rafraîchir les données
         fetchData();
       } else {
-        // Ouvrir une modal de paiement ou rediriger vers une page de paiement
         alert(`Gestion du paiement pour ${client.nom} - Fonctionnalité à implémenter`);
       }
     } catch (error) {

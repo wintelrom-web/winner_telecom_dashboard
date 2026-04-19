@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, User, MapPin, Phone, Calendar, CreditCard, AlertTriangle, CheckCircle, XCircle, Edit, Shield, ShieldOff, DollarSign } from 'lucide-react';
 
 const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManagePayment, onRefresh }) => {
+  const [loadingPayment, setLoadingPayment] = useState(false);
+
+  const handlePayer = async () => {
+    if (!client || !client.id) return;
+    setLoadingPayment(true);
+    try {
+      await onManagePayment(client, 'extend');
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error('Error paying:', error);
+    } finally {
+      setLoadingPayment(false);
+    }
+  };
   if (!client) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
@@ -142,31 +156,27 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
             </span>
             
             <button 
-              onClick={() => {
-                if (window.confirm(`Voulez-vous vraiment étendre l'abonnement de ${client.nom} d'un mois?`)) {
-                  // Appeler la fonction de paiement
-                  onManagePayment && onManagePayment(client, 'extend');
-                }
-              }}
+              onClick={handlePayer}
+              disabled={loadingPayment}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
                 padding: '0.75rem 1.5rem',
-                background: '#10b981',
+                background: loadingPayment ? '#9ca3af' : '#10b981',
                 border: 'none',
                 borderRadius: '8px',
                 color: 'white',
                 fontSize: '0.875rem',
                 fontWeight: '600',
-                cursor: 'pointer',
+                cursor: loadingPayment ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease'
               }}
-              onMouseOver={(e) => e.target.style.background = '#059669'}
-              onMouseOut={(e) => e.target.style.background = '#10b981'}
+              onMouseOver={(e) => !loadingPayment && (e.target.style.background = '#059669')}
+              onMouseOut={(e) => e.target.style.background = loadingPayment ? '#9ca3af' : '#10b981'}
             >
               <CreditCard size={18} />
-              PAYE
+              {loadingPayment ? 'Traitement...' : 'PAYE'}
             </button>
           </div>
         </div>
