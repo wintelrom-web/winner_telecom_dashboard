@@ -218,6 +218,8 @@ const Dashboard = ({ onLogout }) => {
         
         alert(`Paiement effectué avec succès!\n\nClient: ${result.client_nom}\nMatricule: ${result.client_matricule}\nMontant: ${result.prix}\nDate début: ${result.date_debut}\nDate fin: ${result.date_fin}\nJours restants: ${result.jours_restants}`);
         
+        const updatedClient = { ...client, subscription: { ...client.subscription, date_debut: result.date_debut, date_fin: result.date_fin, jours_restants: result.jours_restants, est_actif: true } };
+        setViewingClient(updatedClient);
         fetchData();
       } else {
         alert(`Gestion du paiement pour ${client.nom} - Fonctionnalité à implémenter`);
