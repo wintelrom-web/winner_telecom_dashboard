@@ -15,15 +15,16 @@ class Client(models.Model):
     telephone = models.CharField(max_length=20)
     prix = models.CharField(max_length=50)
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
+    image = models.ImageField(upload_to="clients/", null=True, blank=True)  # ✅ Added field
     date_creation = models.DateTimeField(auto_now_add=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"{self.matricule} - {self.nom}"
     
-        
     class Meta:
         ordering = ['-date_creation']
+
 
 class Subscription(models.Model):
     client = models.OneToOneField(Client, on_delete=models.CASCADE, related_name='subscription')
@@ -38,7 +39,6 @@ class Subscription(models.Model):
     def jours_restants(self):
         if self.date_fin:
             aujourd_hui = timezone.now().date()
-            # Convertir string en date si nécessaire
             if isinstance(self.date_fin, str):
                 from datetime import datetime
                 date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
@@ -51,7 +51,6 @@ class Subscription(models.Model):
     @property
     def est_expiré(self):
         if self.date_fin:
-            # Convertir string en date si nécessaire
             if isinstance(self.date_fin, str):
                 from datetime import datetime
                 date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
@@ -62,19 +61,14 @@ class Subscription(models.Model):
     
     @property
     def échéance_proche(self):
-        # Returns True if we are within 3 days of the expiration date
-        # This alerts when payment/echeance is due soon
         if self.date_fin:
-            # Convertir string en date si nécessaire
             if isinstance(self.date_fin, str):
                 from datetime import datetime
                 date_fin_obj = datetime.strptime(self.date_fin, "%Y-%m-%d").date()
             else:
                 date_fin_obj = self.date_fin
             
-            from datetime import timedelta
             aujourd_hui = timezone.now().date()
             jours_restants = (date_fin_obj - aujourd_hui).days
-            
             return 0 <= jours_restants <= 3
         return False

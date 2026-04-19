@@ -15,9 +15,6 @@ const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: false,
 });
 
@@ -27,9 +24,7 @@ api.interceptors.request.use(
     console.log(`Making ${config.method?.toUpperCase()} request to: ${config.baseURL}${config.url}`);
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
@@ -47,101 +42,61 @@ api.interceptors.response.use(
 );
 
 export const getDashboardStats = async () => {
-  try {
-    const response = await api.get('/dashboard-stats/');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    throw error;
-  }
+  const response = await api.get('/dashboard-stats/');
+  return response.data;
 };
 
 export const getClients = async () => {
-  try {
-    const response = await api.get('/clients/');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching clients:', error);
-    throw error;
-  }
+  const response = await api.get('/clients/');
+  return response.data;
 };
 
 export const getSubscriptions = async () => {
-  try {
-    const response = await api.get('/subscriptions/');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching subscriptions:', error);
-    throw error;
-  }
+  const response = await api.get('/subscriptions/');
+  return response.data;
 };
 
 export const blockClientAccess = async (clientId) => {
-  try {
-    const response = await api.post(`/clients/${clientId}/bloquer_acces/`);
-    return response.data;
-  } catch (error) {
-    console.error('Error blocking client access:', error);
-    throw error;
-  }
+  const response = await api.post(`/clients/${clientId}/bloquer_acces/`);
+  return response.data;
 };
 
 export const activateClientAccess = async (clientId) => {
-  try {
-    const response = await api.post(`/clients/${clientId}/activer_acces/`);
-    return response.data;
-  } catch (error) {
-    console.error('Error activating client access:', error);
-    throw error;
-  }
+  const response = await api.post(`/clients/${clientId}/activer_acces/`);
+  return response.data;
 };
 
+// ✅ Updated to handle FormData correctly
 export const createClient = async (clientData) => {
-  try {
-    const response = await api.post('/clients/', clientData);
+  if (clientData instanceof FormData) {
+    const response = await api.post('/clients/', clientData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
-  } catch (error) {
-    console.error('Error creating client:', error);
-    throw error;
+  } else {
+    const response = await api.post('/clients/', clientData, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data;
   }
 };
 
 export const updateClient = async (clientId, clientData) => {
-  try {
-    const response = await api.put(`/clients/${clientId}/`, clientData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating client:', error);
-    throw error;
-  }
+  const response = await api.put(`/clients/${clientId}/`, clientData);
+  return response.data;
 };
 
 export const deleteClient = async (clientId) => {
-  try {
-    const response = await api.delete(`/clients/${clientId}/`);
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting client:', error);
-    throw error;
-  }
+  const response = await api.delete(`/clients/${clientId}/`);
+  return response.data;
 };
 
 export const payerAbonnement = async (clientId) => {
-  try {
-    const response = await api.post(`/clients/${clientId}/etendre_abonnement/`);
-    return response.data;
-  } catch (error) {
-    console.error('Error extending subscription:', error);
-    throw error;
-  }
+  const response = await api.post(`/clients/${clientId}/etendre_abonnement/`);
+  return response.data;
 };
 
 export const getPayments = async (url = '/payments/') => {
-  try {
-    const response = await api.get(url);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching payments:', error);
-    throw error;
-  }
+  const response = await api.get(url);
+  return response.data;
 };

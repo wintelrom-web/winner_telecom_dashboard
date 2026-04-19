@@ -56,20 +56,34 @@ const ClientDetails = ({ client, onClose }) => {
             paddingBottom: '1rem',
             borderBottom: '1px solid #e5e7eb'
           }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '1.5rem',
-              fontWeight: 'bold'
-            }}>
-              {client.nom ? client.nom.charAt(0).toUpperCase() : '?'}
-            </div>
+            {client.image ? (
+              <img 
+                src={client.image} 
+                alt={client.nom} 
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid #e5e7eb'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: 'bold'
+              }}>
+                {client.nom ? client.nom.charAt(0).toUpperCase() : '?'}
+              </div>
+            )}
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1f2937' }}>{client.nom}</h3>
               <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280', fontSize: '0.875rem' }}>{client.matricule}</p>
@@ -94,7 +108,6 @@ const ClientDetails = ({ client, onClose }) => {
 
           {/* Client Info Grid */}
           <div style={{ display: 'grid', gap: '1rem' }}>
-            
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -172,7 +185,6 @@ const ClientDetails = ({ client, onClose }) => {
                 <p style={{ margin: 0, fontSize: '0.9375rem', color: '#1f2937', fontWeight: '500' }}>{formatDate(client.date_creation)}</p>
               </div>
             </div>
-
           </div>
 
           {/* Subscription Info */}
@@ -190,18 +202,7 @@ const ClientDetails = ({ client, onClose }) => {
                 }}>
                   <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>Date début</p>
                   <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9375rem', color: '#1f2937', fontWeight: '600' }}>
-                    {formatDate(client.subscription.date_debut)}
-                  </p>
-                </div>
-                <div style={{ 
-                  padding: '0.75rem',
-                  background: client.subscription.échéance_proche ? '#fef3c7' : '#f3f4f6',
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>Date fin</p>
-                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9375rem', color: '#1f2937', fontWeight: '600' }}>
-                    {formatDate(client.subscription.date_fin)}
+                  {formatDate(client.subscription.date_fin)}
                   </p>
                 </div>
                 <div style={{ 

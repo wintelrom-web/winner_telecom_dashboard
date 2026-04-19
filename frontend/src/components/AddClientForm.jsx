@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createClient } from '../services/api';
 import { UserPlus, Phone, MapPin, Tag, AlertCircle, CheckCircle, Calendar, Image } from 'lucide-react';
 
@@ -36,29 +36,16 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Clear messages when user starts typing
     if (error || success) {
       setError('');
       setSuccess('');
     }
-
-    // Phone number validation
     if (name === 'telephone') {
       const phoneRegex = /^[6-9]\d{0,8}$/;
       if (value && !phoneRegex.test(value)) {
         return;
       }
     }
-
-    // Log pour déboguer la sélection du prix
-    if (name === 'prix') {
-      console.log('Prix sélectionné dans handleChange:', value);
-    }
-    
-    // Log général pour tous les changements
-    console.log('FormData après changement:', { ...formData, [name]: value || '' });
-    
     setFormData({
       ...formData,
       [name]: value || ''
@@ -102,92 +89,49 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
       setError('Veuillez sélectionner une offre d\'abonnement');
       return false;
     }
-        return true;
+    if (!formData.image) {
+      setError('La photo du client est obligatoire');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      let clientData;
-      
-      if (formData.image) {
-        clientData = new FormData();
-        clientData.append('matricule', formData.matricule);
-        clientData.append('nom', formData.nom.trim());
-        clientData.append('telephone', formData.telephone.trim());
-        clientData.append('quartier', formData.quartier.trim());
-        clientData.append('ville', formData.ville.trim());
-        clientData.append('prix', formData.prix);
-        clientData.append('date_debut', formData.date_debut);
-        clientData.append('date_fin', formData.date_fin);
-        clientData.append('image', formData.image);
-      } else {
-        clientData = {
-          matricule: formData.matricule,
-          nom: formData.nom.trim(),
-          telephone: formData.telephone.trim(),
-          quartier: formData.quartier.trim(),
-          ville: formData.ville.trim(),
-          prix: formData.prix,
-          date_debut: formData.date_debut,
-          date_fin: formData.date_fin
-        };
-      }
+      const clientData = new FormData();
+      clientData.append('matricule', formData.matricule);
+      clientData.append('nom', formData.nom.trim());
+      clientData.append('telephone', formData.telephone.trim());
+      clientData.append('quartier', formData.quartier.trim());
+      clientData.append('ville', formData.ville.trim());
+      clientData.append('prix', formData.prix);
+      clientData.append('date_debut', formData.date_debut);
+      clientData.append('date_fin', formData.date_fin);
+      clientData.append('image', formData.image);
 
-      console.log('État final du formulaire avant envoi:', formData);
-      console.log('Valeur spécifique de formData.prix:', formData.prix);
-      
-      // Vérifier que le prix n'est pas vide
-      console.log('=== VALIDATION PRIX ===');
-      console.log('formData.prix:', formData.prix);
-      console.log('!formData.prix:', !formData.prix);
-      console.log('Type de formData.prix:', typeof formData.prix);
-      console.log('Longueur de formData.prix:', formData.prix ? formData.prix.length : 'N/A');
-      console.log('========================');
-      
-      if (!formData.prix) {
-        console.log('VALIDATION BLOQUÉE - prix vide');
-        setError('Veuillez sélectionner une offre d\'abonnement');
-        setLoading(false);
-        return;
-      }
-      
-      console.log('VALIDATION RÉUSSIE - prix présent');
-      
-      console.log('=== DÉTAILS ENVOI ===');
-      console.log('Données client envoyées:', clientData);
-      console.log('Type de clientData:', typeof clientData);
-      console.log('clientData.prix:', clientData.prix);
-      console.log('clientData.prix existe-t-il:', 'prix' in clientData);
-      console.log('======================');
       await createClient(clientData);
       setSuccess('Client créé avec succès!');
-      
-      // Reset form - revenir à la sélection vide
-      const year = new Date().getFullYear();
-      const random = Math.floor(Math.random() * 90000) + 10000;
+
       setFormData({
         matricule: '',
         nom: '',
         telephone: '',
         quartier: '',
-        prix: '', // Revenir à la sélection vide
+        ville: 'Abidjan',
+        prix: '',
         date_debut: '',
         date_fin: '',
         image: null
       });
       setImagePreview(null);
 
-      // Notify parent and close modal after a short delay
       setTimeout(() => {
         onClientAdded();
         onClose();
@@ -196,7 +140,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
     } catch (error) {
       console.error('Error creating client:', error);
       if (error.response?.data) {
-        // Handle specific backend errors
         const backendError = error.response.data;
         if (backendError.telephone) {
           setError('Ce numéro de téléphone existe déjà');
@@ -223,7 +166,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           {error}
         </div>
       )}
-
       {success && (
         <div className="success-message">
           <CheckCircle size={18} />
@@ -233,7 +175,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
       <div className="form-group">
         <label htmlFor="matricule">
-          <Tag size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <Tag size={16} style={{ marginRight: '0.5rem' }} />
           Matricule
         </label>
         <input
@@ -251,7 +193,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
       <div className="form-group">
         <label htmlFor="nom">
-          <UserPlus size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <UserPlus size={16} style={{ marginRight: '0.5rem' }} />
           Nom complet *
         </label>
         <input
@@ -268,7 +210,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
       <div className="form-group">
         <label htmlFor="prix">
-          <Tag size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <Tag size={16} style={{ marginRight: '0.5rem' }} />
           Prix *
         </label>
         <select
@@ -290,7 +232,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
       <div className="form-group">
         <label htmlFor="ville">
-          <MapPin size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <MapPin size={16} style={{ marginRight: '0.5rem' }} />
           Ville *
         </label>
         <input
@@ -303,12 +245,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           placeholder="Ex: Abidjan, Yamoussoukro..."
           className="form-input"
         />
-        <small>Ville de résidence du client</small>
       </div>
 
       <div className="form-group">
         <label htmlFor="telephone">
-          <Phone size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <Phone size={16} style={{ marginRight: '0.5rem' }} />
           Téléphone *
         </label>
         <input
@@ -322,12 +263,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           maxLength={9}
           className="form-input"
         />
-        <small>Format: 9 chiffres commençant par 6, 7, 8 ou 9</small>
       </div>
 
       <div className="form-group">
         <label htmlFor="quartier">
-          <MapPin size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <MapPin size={16} style={{ marginRight: '0.5rem' }} />
           Quartier *
         </label>
         <input
@@ -340,13 +280,12 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           placeholder="Ex: Plateau, Yopougon, Cocody..."
           className="form-input"
         />
-        <small>Quartier de résidence du client</small>
       </div>
 
       <div className="form-group">
         <label htmlFor="image">
-          <Image size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
-          Photo du client *
+          <Image size={16} style={{ marginRight: '0.5rem' }} />
+                    Photo du client *
         </label>
         <input
           type="file"
@@ -400,7 +339,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
 
       <div className="form-group">
         <label htmlFor="date_debut">
-          <Calendar size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <Calendar size={16} style={{ marginRight: '0.5rem' }} />
           Date de début *
         </label>
         <input
@@ -412,12 +351,11 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           required
           className="form-input"
         />
-        <small>Date de début de l'abonnement (obligatoire)</small>
       </div>
 
       <div className="form-group">
         <label htmlFor="date_fin">
-          <Calendar size={16} style={{ display: 'inline', marginRight: '0.5rem' }} />
+          <Calendar size={16} style={{ marginRight: '0.5rem' }} />
           Date de fin *
         </label>
         <input
@@ -429,7 +367,6 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           required
           className="form-input"
         />
-        <small>Date de fin de l'abonnement (obligatoire)</small>
       </div>
 
       <div className="form-actions">

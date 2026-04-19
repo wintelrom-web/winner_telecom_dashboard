@@ -6,61 +6,45 @@ class ClientSerializer(serializers.ModelSerializer):
     date_debut = serializers.DateField(write_only=True, required=False)
     date_fin = serializers.DateField(write_only=True, required=False)
     prix = serializers.CharField(max_length=50)
+    image = serializers.ImageField(required=False)  # ✅ Added field
     
     class Meta:
         model = Client
-        fields = ['id', 'matricule', 'quartier', 'ville', 'nom', 'telephone', 'prix', 'statut', 'date_creation', 'date_mise_a_jour', 'subscription', 'date_debut', 'date_fin']
+        fields = [
+            'id', 'matricule', 'quartier', 'ville', 'nom', 'telephone',
+            'prix', 'statut', 'date_creation', 'date_mise_a_jour',
+            'image', 'subscription', 'date_debut', 'date_fin'
+        ]
     
     def validate(self, data):
-        print("=== DEBUG SERIALIZER VALIDATE ===")
-        print("Données reçues dans serializer validate:", data)
-        print("Type de data:", type(data))
-        print("Keys dans data:", data.keys() if hasattr(data, 'keys') else 'No keys')
-        print("=====================================")
         return data
     
     def create(self, validated_data):
-        print("Données validées dans serializer create:", validated_data)
-        # Extraire date_debut et date_fin des données validées
         date_debut = validated_data.pop('date_debut', None)
         date_fin = validated_data.pop('date_fin', None)
-        
-        # Créer le client sans les champs d'abonnement
         client = Client.objects.create(**validated_data)
-        
-        # Créer l'abonnement si les dates sont fournies
         if date_debut and date_fin:
-            from .models import Subscription
             Subscription.objects.create(
                 client=client,
                 date_debut=date_debut,
                 date_fin=date_fin,
                 est_actif=True
             )
-        
         return client
     
     def update(self, instance, validated_data):
-        print("Données reçues dans serializer update:", validated_data)
-        # Extraire date_debut et date_fin des données validées
         date_debut = validated_data.pop('date_debut', None)
         date_fin = validated_data.pop('date_fin', None)
-        
-        # Mettre à jour les champs du client
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        
-        # Mettre à jour l'abonnement si les dates sont fournies
         if date_debut or date_fin:
-            from .models import Subscription
             subscription, created = Subscription.objects.get_or_create(client=instance)
             if date_debut:
                 subscription.date_debut = date_debut
             if date_fin:
                 subscription.date_fin = date_fin
             subscription.save()
-        
         return instance
     
     def get_subscription(self, obj):
@@ -90,9 +74,12 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Subscription
-        fields = ['id', 'client', 'client_nom', 'client_matricule', 'client_quartier', 
-                 'client_telephone', 'client_statut', 'date_debut', 'date_fin', 
-                 'est_actif', 'jours_restants', 'est_expiré', 'échéance_proche']
+        fields = [
+            'id', 'client', 'client_nom', 'client_matricule', 'client_quartier',
+            'client_telephone', 'client_statut', 'date_debut', 'date_fin',
+            'est_actif', 'jours_restants', 'est_expiré', 'échéance_proche'
+        ]
+
 
 class DashboardStatsSerializer(serializers.Serializer):
     total_clients = serializers.IntegerField()
