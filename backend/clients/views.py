@@ -103,62 +103,49 @@ class ClientViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def etendre_abonnement(self, request, pk=None):
+        from datetime import timedelta
         try:
             client = self.get_object()
             
-            # Vérifier si le client a déjà un abonnement actif
+            today = timezone.now().date()
+            
             if not hasattr(client, 'subscription') or not client.subscription:
+                subscription = Subscription.objects.create(
+                    client=client,
+                    date_debut=today,
+                    date_fin=today + timedelta(days=30),
+                    est_actif=True
+                )
                 return Response({
-                    'error': 'Ce client n\'a pas d\'abonnement actif',
-                    'message': 'Veuillez d\'abord créer un abonnement pour ce client'
-                }, status=400)
+                    'status': 'abonnement créé',
+                    'message': f'Abonnement de {client.nom} créé pour un mois',
+                    'client_nom': client.nom,
+                    'client_matricule': client.matricule,
+                    'prix': client.prix,
+                    'date_debut': subscription.date_debut,
+                    'date_fin': subscription.date_fin,
+                    'jours_restants': subscription.jours_restants
+                })
             
             subscription = client.subscription
-            
-            # Étendre l'abonnement d'un mois
-            try:
-                from django.db import connection
-                with connection.cursor() as cursor:
-                    # Récupérer la date de fin actuelle
-                    cursor.execute("""
-                        SELECT date_fin FROM clients_subscription 
-                        WHERE client_id = %s
-                    """, [client.id])
-                    result = cursor.fetchone()
-                    
-                    if result and result[0]:
-                        current_end_date = result[0]
-                        # Ajouter un mois à la date de fin
-                        cursor.execute("""
-                            UPDATE clients_subscription 
-                            SET date_fin = %s + INTERVAL '1 month'
-                            WHERE client_id = %s
-                        """, [current_end_date, client.id])
-                    else:
-                        # Créer une nouvelle subscription si elle n'existe pas
-                        from datetime import datetime, timedelta
-                        new_end_date = datetime.now() + timedelta(days=30)
-                        cursor.execute("""
-                            INSERT INTO clients_subscription (client_id, date_debut, date_fin)
-                            VALUES (%s, NOW(), %s)
-                            ON CONFLICT (client_id) DO UPDATE
-                            SET date_fin = EXCLUDED.date_fin
-                        """, [client.id, new_end_date])
-                        
-            except Exception as e:
-                logger.error(f"Error updating subscription: {str(e)}")
-                # Continuer même si la mise à jour échoue
+            subscription.date_debut = today
+            subscription.date_fin = today + timedelta(days=30)
+            subscription.est_actif = True
+            subscription.save()
             
             return Response({
                 'status': 'abonnement étendu',
-                'message': f'Abonnement de {client.nom} étendu avec succès pour un mois supplémentaire',
+                'message': f'Abonnement de {client.nom} étendu pour un mois supplémentaire',
                 'client_nom': client.nom,
                 'client_matricule': client.matricule,
-                'prix': client.prix
+                'prix': client.prix,
+                'date_debut': subscription.date_debut,
+                'date_fin': subscription.date_fin,
+                'jours_restants': subscription.jours_restants
             })
             
         except Exception as e:
-            logger.error(f"Error extending subscription for client {pk}: {str(e)}")
+            logger.error(f"Error extending subscription for client {pk}: {str(e)}", exc_info=True)
             return Response({
                 'error': 'Erreur lors de l\'extension',
                 'message': 'Impossible d\'étendre l\'abonnement',
