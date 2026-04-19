@@ -69,20 +69,6 @@ class ClientViewSet(viewsets.ModelViewSet):
                 client = serializer.save()
                 logger.info(f"Client created successfully: {client.id} - {client.nom}")
                 
-                # Créer l'abonnement si les dates sont fournies
-                if client_data.get('date_debut') and client_data.get('date_fin'):
-                    try:
-                        logger.info(f"Creating subscription for client {client.id}")
-                        Subscription.objects.create(
-                            client=client,
-                            date_debut=client_data['date_debut'],
-                            date_fin=client_data['date_fin'],
-                            est_actif=True
-                        )
-                        logger.info("Subscription created successfully")
-                    except Exception as e:
-                        logger.error(f"Error creating subscription: {str(e)}")
-                
                 headers = self.get_success_headers(serializer.data)
                 logger.info("Returning 201 Created response")
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
