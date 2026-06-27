@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, MapPin, Phone, Calendar, CreditCard, AlertTriangle, CheckCircle, XCircle, Edit, Shield, ShieldOff, DollarSign } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Phone, Calendar, CreditCard, AlertTriangle, CheckCircle, XCircle, Edit, DollarSign } from 'lucide-react';
 
-const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManagePayment, onRefresh }) => {
+const Info = ({ client, onBack, onEdit, onManagePayment, onRefresh }) => {
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   const handlePayer = async () => {
@@ -33,31 +33,6 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
-  const getStatusIcon = (statut) => {
-    switch (statut) {
-      case 'actif':
-        return <CheckCircle size={16} style={{ color: '#10b981' }} />;
-      case 'expiré':
-        return <XCircle size={16} style={{ color: '#ef4444' }} />;
-      case 'bloqué':
-        return <AlertTriangle size={16} style={{ color: '#7c3aed' }} />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusColor = (statut) => {
-    switch (statut) {
-      case 'actif':
-        return '#10b981';
-      case 'expiré':
-        return '#ef4444';
-      case 'bloqué':
-        return '#7c3aed';
-      default:
-        return '#6b7280';
-    }
-  };
 
   return (
     <div style={{ 
@@ -139,22 +114,6 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
             <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>{client.matricule}</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              padding: '0.5rem 1rem',
-              borderRadius: '9999px',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              background: 'rgba(255,255,255,0.2)',
-              color: 'white'
-            }}>
-              {getStatusIcon(client.statut)}
-              {client.statut}
-            </span>
-            
             <button 
               onClick={handlePayer}
               disabled={loadingPayment}
@@ -193,6 +152,17 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
           <div>
             <label style={styles.label}>Quartier</label>
             <p style={styles.value}>{client.quartier}</p>
+          </div>
+        </div>
+
+        {/* Ville */}
+        <div style={styles.infoCard}>
+          <div style={{...styles.iconBox, background: '#dcfce7', color: '#16a34a'}}>
+            <MapPin size={24} />
+          </div>
+          <div>
+            <label style={styles.label}>Ville</label>
+            <p style={styles.value}>{client.ville || 'N/A'}</p>
           </div>
         </div>
 
@@ -326,30 +296,29 @@ const Info = ({ client, onBack, onEdit, onBlockAccess, onActivateAccess, onManag
         </button>
         
         {client.subscription && (
-          <>
-            <button 
-              onClick={() => {
-                if (client.subscription.est_actif) {
-                  // Bloquer l'accès
-                  if (window.confirm('Voulez-vous vraiment bloquer l\'accès de ce client?')) {
-                    // Appeler la fonction pour bloquer
-                    onBlockAccess && onBlockAccess(client.id);
-                  }
-                } else {
-                  // Activer l'accès
-                  if (window.confirm('Voulez-vous vraiment activer l\'accès de ce client?')) {
-                    // Appeler la fonction pour activer
-                    onActivateAccess && onActivateAccess(client.id);
-                  }
-                }
-              }}
-              className={`btn ${client.subscription.est_actif ? 'btn-danger' : 'btn-success'}`}
-              style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              {client.subscription.est_actif ? <ShieldOff size={18} /> : <Shield size={18} />}
-              {client.subscription.est_actif ? 'Bloquer' : 'Activer'}
-            </button>
-          </>
+          <button 
+            onClick={() => onManagePayment(client, 'extend')}
+            disabled={loadingPayment}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1.5rem',
+              background: loadingPayment ? '#9ca3af' : '#10b981',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: loadingPayment ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => !loadingPayment && (e.target.style.background = '#059669')}
+            onMouseOut={(e) => e.target.style.background = loadingPayment ? '#9ca3af' : '#10b981'}
+          >
+            <CreditCard size={18} />
+            {loadingPayment ? 'Traitement...' : 'PAYE'}
+          </button>
         )}
       </div>
     </div>

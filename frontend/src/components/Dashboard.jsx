@@ -9,13 +9,14 @@ import Reports from './Reports';
 import Settings from './Settings';
 import Edit from './Edit';
 import Info from './Info';
-import { getDashboardStats, getClients, blockClientAccess, activateClientAccess } from '../services/api';
+import Finance from './Finance';
+import { getDashboardStats, getClients } from '../services/api';
 
 const Dashboard = ({ onLogout }) => {
   const [stats, setStats] = useState({
     total_clients: 0,
     abonnements_actifs: 0,
-    expirés: 0,
+    expirer: 0,
     échéances_proches: 0,
     total_versements: 0
   });
@@ -23,13 +24,11 @@ const Dashboard = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentView, setCurrentView] = useState(() => {
-    // Restaurer la vue sauvegardée depuis localStorage
     const savedView = localStorage.getItem('dashboard_currentView');
     return savedView || 'dashboard';
   });
   const [editingClient, setEditingClient] = useState(null);
   const [viewingClient, setViewingClient] = useState(() => {
-    // Restaurer le client visualisé depuis localStorage
     const savedViewingClient = localStorage.getItem('dashboard_viewingClient');
     return savedViewingClient ? JSON.parse(savedViewingClient) : null;
   });
@@ -37,17 +36,18 @@ const Dashboard = ({ onLogout }) => {
     addClient: false,
     settings: false
   });
-  const [filterStatus, setFilterStatus] = useState(null);
+  const [filterVille, setFilterVille] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [filterYear, setFilterYear] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [cardFilter, setCardFilter] = useState(null);
+  const [cardFilterTitle, setCardFilterTitle] = useState('');
+  const [fetchingFiltered, setFetchingFiltered] = useState(false);
 
-  // Sauvegarder la vue actuelle dans localStorage
   useEffect(() => {
     localStorage.setItem('dashboard_currentView', currentView);
   }, [currentView]);
 
-  // Sauvegarder le client visualisé dans localStorage
   useEffect(() => {
     if (viewingClient) {
       localStorage.setItem('dashboard_viewingClient', JSON.stringify(viewingClient));
@@ -71,13 +71,33 @@ const Dashboard = ({ onLogout }) => {
 
   useEffect(() => {
     fetchData().finally(() => setLoading(false));
-    // Load dark mode preference
     const savedDarkMode = localStorage.getItem('darkMode');
     if (savedDarkMode === 'true') {
       setDarkMode(true);
       document.body.classList.add('dark-mode');
     }
   }, []);
+
+  useEffect(() => {
+    if (currentView === 'filtered_clients') {
+      const fetchFilteredClients = async () => {
+        setFetchingFiltered(true);
+        try {
+          const params = {};
+          if (cardFilter) {
+            params.statut = cardFilter;
+          }
+          const data = await getClients(params);
+          setClients(data);
+        } catch (error) {
+          console.error('Error fetching filtered clients:', error);
+        } finally {
+          setFetchingFiltered(false);
+        }
+      };
+      fetchFilteredClients();
+    }
+  }, [currentView, cardFilter]);
 
   const handleDarkModeToggle = (enable) => {
     setDarkMode(enable);
@@ -90,29 +110,23 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const filteredClients = Array.isArray(clients) ? clients.filter(client => {
-    // First apply search term
-    const matchesSearch = 
+    const filteredSearch = 
       client.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.matricule.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.quartier.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.ville.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.telephone.includes(searchTerm);
     
-    // Then apply status filter from card click
-    if (!matchesSearch) return false;
+    if (!filteredSearch) return false;
     
-    // Apply status filter
-    if (filterStatus === 'actif' && client.statut !== 'actif') return false;
-    if (filterStatus === 'expiré' && client.statut !== 'expiré') return false;
-    if (filterStatus === 'échéance' && !client.subscription?.échéance_proche) return false;
+    if (filterVille && client.ville !== filterVille) return false;
     
-    // Apply month filter
     if (filterMonth) {
       const clientMonth = client.subscription?.date_fin ? 
         new Date(client.subscription.date_fin).getMonth() + 1 : null;
       if (clientMonth !== parseInt(filterMonth)) return false;
     }
     
-    // Apply year filter
     if (filterYear) {
       const clientYear = client.subscription?.date_fin ? 
         new Date(client.subscription.date_fin).getFullYear() : null;
@@ -131,7 +145,7 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const handleClientAdded = async () => {
-    await fetchData(); // Refresh data after adding client
+    await fetchData();
   };
 
   const handleEditClient = (client) => {
@@ -139,8 +153,7 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const handleClientUpdated = async () => {
-    await fetchData(); // Refresh data after updating client
-    // Update viewingClient if it exists with the updated data
+    await fetchData();
     if (viewingClient) {
       const updatedClients = await getClients();
       const updatedClient = updatedClients.find(c => c.id === viewingClient.id);
@@ -152,7 +165,7 @@ const Dashboard = ({ onLogout }) => {
   };
 
   const handleClientDeleted = async () => {
-    await fetchData(); // Refresh data after deleting client
+    await fetchData();
     setEditingClient(null);
   };
 
@@ -160,14 +173,12 @@ const Dashboard = ({ onLogout }) => {
     setEditingClient(null);
   };
 
-  
   const handleGoHome = () => {
     setCurrentView('dashboard');
   };
 
   const handleViewClient = (client) => {
     try {
-      console.log('Navigating to client info for:', client);
       if (!client || !client.id) {
         console.error('Invalid client data:', client);
         alert('Erreur: Données du client invalides');
@@ -190,26 +201,6 @@ const Dashboard = ({ onLogout }) => {
     setCurrentView(view);
   };
 
-  const handleBlockAccess = async (clientId) => {
-    try {
-      await blockClientAccess(clientId);
-      await fetchData(); // Refresh data
-    } catch (error) {
-      console.error('Error blocking access:', error);
-      alert('Erreur lors du blocage de l\'accès');
-    }
-  };
-
-  const handleActivateAccess = async (clientId) => {
-    try {
-      await activateClientAccess(clientId);
-      await fetchData(); // Refresh data
-    } catch (error) {
-      console.error('Error activating access:', error);
-      alert('Erreur lors de l\'activation de l\'accès');
-    }
-  };
-
   const handleManagePayment = async (client, action = 'manage') => {
     try {
       if (action === 'extend') {
@@ -230,21 +221,51 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
-  const handleCardClick = (cardId) => {
-    // cardId can be: 'total', 'actifs', 'expirés', 'échéances'
-    if (cardId === 'total') {
-      setFilterStatus(null); // Show all
-      setSearchTerm('');
-    } else if (cardId === 'actifs') {
-      setFilterStatus('actif');
-      setSearchTerm('');
-    } else if (cardId === 'expirés') {
-      setFilterStatus('expiré');
-      setSearchTerm('');
-    } else if (cardId === 'échéances') {
-      setFilterStatus('échéance');
-      setSearchTerm('');
+  const handleCardClick = async (cardId) => {
+    let filter = null;
+    let title = '';
+    switch (cardId) {
+      case 'total':
+        title = 'Tous les Clients';
+        break;
+      case 'actifs':
+        filter = 'actif';
+        title = 'Abonnements Actifs';
+        break;
+      case 'expirer':
+        filter = 'expiré';
+        title = 'Clients Expirés';
+        break;
+      case 'échéances':
+        filter = 'échéance';
+        title = 'Échéances Proches';
+        break;
     }
+    setCardFilter(filter);
+    setCardFilterTitle(title);
+    setCurrentView('filtered_clients');
+    setSearchTerm('');
+    setFilterVille('');
+    setFilterMonth('');
+    setFilterYear('');
+  };
+
+  const handleRefreshFiltered = async () => {
+    try {
+      const params = {};
+      if (cardFilter) {
+        params.statut = cardFilter;
+      }
+      const data = await getClients(params);
+      setClients(data);
+    } catch (error) {
+      console.error('Error refreshing filtered clients:', error);
+    }
+  };
+
+  const handleBackFromFiltered = async () => {
+    await fetchData();
+    setCurrentView('dashboard');
   };
 
   const handleAction = (action) => {
@@ -252,11 +273,14 @@ const Dashboard = ({ onLogout }) => {
       case 'addClient':
         handleOpenModal('addClient');
         break;
-            case 'clientDetails':
+      case 'clientDetails':
         setCurrentView('dashboard');
         break;
       case 'reports':
         setCurrentView('reports');
+        break;
+      case 'finance':
+        setCurrentView('finance');
         break;
       case 'settings':
         handleOpenModal('settings');
@@ -266,7 +290,7 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
-  if (loading && currentView === 'dashboard') {
+  if ((loading && currentView === 'dashboard') || (fetchingFiltered && currentView === 'filtered_clients')) {
     return (
       <div className="loading-container">
         <div className="loading-text">Chargement...</div>
@@ -298,6 +322,35 @@ const Dashboard = ({ onLogout }) => {
                   onEditClient={handleEditClient}
                   onRefresh={fetchData}
                   onViewClient={handleViewClient}
+                  filterVille={filterVille}
+                  setFilterVille={setFilterVille}
+                  filterMonth={filterMonth}
+                  setFilterMonth={setFilterMonth}
+                  filterYear={filterYear}
+                  setFilterYear={setFilterYear}
+                />
+              </div>
+            )}
+
+            {currentView === 'filtered_clients' && (
+              <div>
+                <button 
+                  onClick={handleBackFromFiltered} 
+                  className="btn btn-secondary"
+                  style={{ marginBottom: '1rem' }}
+                >
+                  ← Retour au Dashboard
+                </button>
+                <h2 style={{ marginBottom: '1rem' }}>{cardFilterTitle}</h2>
+                <ClientTable 
+                  clients={filteredClients} 
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  onEditClient={handleEditClient}
+                  onRefresh={handleRefreshFiltered}
+                  onViewClient={handleViewClient}
+                  filterVille={filterVille}
+                  setFilterVille={setFilterVille}
                   filterMonth={filterMonth}
                   setFilterMonth={setFilterMonth}
                   filterYear={filterYear}
@@ -318,13 +371,23 @@ const Dashboard = ({ onLogout }) => {
                 <Reports />
               </div>
             )}
+            {currentView === 'finance' && (
+              <div>
+                <button 
+                  onClick={() => handleViewChange('dashboard')} 
+                  className="btn btn-secondary"
+                  style={{ marginBottom: '1rem' }}
+                >
+                  ← Retour au Dashboard
+                </button>
+                <Finance onBack={() => handleViewChange('dashboard')} />
+              </div>
+            )}
             {currentView === 'info' && viewingClient && (
               <Info 
                 client={viewingClient}
                 onBack={handleBackFromInfo}
                 onEdit={handleEditClient}
-                onBlockAccess={handleBlockAccess}
-                onActivateAccess={handleActivateAccess}
                 onManagePayment={handleManagePayment}
                 onRefresh={fetchData}
               />

@@ -20,9 +20,9 @@ const StatsCards = ({ stats, onCardClick }) => {
       bgColor: '#ecfdf5'
     },
     {
-      id: 'expirés',
-      title: 'Expirés',
-      value: stats.expirés || 0,
+      id: 'expirer',
+      title: 'Expirer',
+      value: stats.expirer || 0,
       icon: <XCircle size={24} />,
       color: '#ef4444',
       bgColor: '#fef2f2'

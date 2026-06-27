@@ -46,9 +46,9 @@ export const getDashboardStats = async () => {
   return response.data;
 };
 
-export const getClients = async () => {
-  const response = await api.get('/clients/');
-  return response.data;
+export const getClients = async (params = {}) => {
+  const response = await api.get('/clients/', { params });
+  return response.data.clients;
 };
 
 export const getSubscriptions = async () => {
@@ -93,6 +93,16 @@ export const deleteClient = async (clientId) => {
 
 export const payerAbonnement = async (clientId) => {
   const response = await api.post(`/clients/${clientId}/etendre_abonnement/`);
+  return response.data;
+};
+
+export const getVilles = async () => {
+  const response = await api.get('/villes/');
+  return response.data;
+};
+
+export const getQuartiers = async (ville) => {
+  const response = await api.get(`/quartiers/?ville=${ville}`);
   return response.data;
 };
 

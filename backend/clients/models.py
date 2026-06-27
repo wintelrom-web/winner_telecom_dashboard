@@ -13,6 +13,7 @@ class Client(models.Model):
     nom = models.CharField(max_length=200)
     telephone = models.CharField(max_length=20)
     prix = models.CharField(max_length=50)
+    ville = models.CharField(max_length=100, default='Douala')
     statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif')
     date_creation = models.DateTimeField(auto_now_add=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)
@@ -68,5 +69,33 @@ class Subscription(models.Model):
             
             aujourd_hui = timezone.now().date()
             jours_restants = (date_fin_obj - aujourd_hui).days
-            return 0 <= jours_restants <= 3
+            return 0 <= jours_restants < 3
         return False
+
+
+class Payment(models.Model):
+    PAYMENT_TYPES = [
+        ('1Mo', '1 Mois'),
+        ('Access', 'Access'),
+        ('Premium', 'Premium'),
+        ('VIP', 'VIP'),
+    ]
+    
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payments')
+    username = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=10, decimal_places=0)
+    type = models.CharField(max_length=20, choices=PAYMENT_TYPES, default='1Mo')
+    payment_date = models.DateTimeField(auto_now_add=True)
+    month = models.IntegerField()
+    year = models.IntegerField()
+    day = models.IntegerField()
+    
+    def __str__(self):
+        return f"{self.username} - {self.amount} FCFA - {self.date}"
+    
+    @property
+    def date(self):
+        return f"{self.year}-{self.month:02d}-{self.day:02d}"
+    
+    class Meta:
+        ordering = ['-year', '-month', '-day']

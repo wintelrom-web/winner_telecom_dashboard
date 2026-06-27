@@ -1,6 +1,32 @@
-import React, { useState } from 'react';
-import { createClient } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { createClient, getVilles, getQuartiers } from '../services/api';
 import { UserPlus, Phone, MapPin, Tag, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
+
+const VILLES_CAMEROUN = [
+  'Yaoundé',  // Centre
+  'Douala',   // Littoral
+  'Bafoussam',  // West
+  'Garoua',  // North
+  'Maroua',  // Far North
+  'Bamenda',  // Northwest
+  'Buea',     // Southwest
+  'Bertoua',  // East
+  'Ebolowa',  // South
+  'Ngaoundéré',  // Adamawa
+];
+
+const QUARTIERS_CAMEROUN = {
+  'Yaoundé': ['Centre Administrative', 'Bastos', 'Ngoussou', 'Mvog-Ada', 'Elig-Mfomo', 'Ekoudou', 'Etoug-Ebe', 'Mokolo', 'Nkol-Eton', 'Nkol-Afamba', 'Ngoa-Ekelle', 'Académie', 'Essos', 'Tsinga', 'Okigbo', 'Nkomo', 'Nlongkak', 'Mahbeye', 'Carrefour', 'Messamebede'],
+  'Douala': ['Douala 1er', 'Douala 2e', 'Douala 3e', 'Douala 4e', 'Douala 5e', 'Bonaberi', 'Nkongsamba', 'Kotto', 'New Bell', 'Bonapriso', 'Japoma', 'Mouelle', 'Deido', 'Plateau', 'Bonamoussadi', 'Nyalla', 'Cite des Palmiers', 'Makea', 'Logbaba', 'Ndogbong'],
+  'Bafoussam': ['Bafoussam 1er', 'Bafoussam 2e', 'Bafoussam 3e', 'Tchecoua', 'Foumbot', 'Foumban', 'Bandjoun', 'Soumtcha', 'Bangante', 'Magba', 'Kékem', 'Mbouda', 'Galim', 'Babadjou', 'Bamendjou', 'Bangourain', 'Batcha', 'Kouoptamo'],
+  'Garoua': ['Garoua 1er', 'Garoua 2e', 'Garoua 3e', 'Maga', 'Tchamba', 'Touboro', 'Tchanaga', 'Poli', 'Dembo', 'Bogo', 'Moussoro', 'Yagoua', 'Kalfou', 'Guider', 'Figuil', 'Rey Bouba', 'Touboro', 'Bénoué'],
+  'Maroua': ['Maroua 1er', 'Maroua 2e', 'Maroua 3e', 'Tokombéri', 'Mokolo', 'Kalerah', 'Bouda', 'Mora', 'Kosei', 'Bogo', 'Dargala', 'Guidiguis', 'Maga', 'Waza', 'Yagoua', 'Blangoual', 'Guirvidig', 'Mara'],
+  'Bamenda': ['Bamenda 1er', 'Bamenda 2e', 'Bamenda 3e', 'Bamenda 4e', 'Bambui', 'Wum', 'Kumbo', 'Oku', 'Njinike', 'Santa', 'Bafut', 'Pinyin', 'Nkwen', 'Mankon', 'Bali', 'Ndop', 'Widikum', 'Bambili', 'Ntame', 'Mbengwi'],
+  'Buea': ['Buea 1er', 'Buea 2e', 'Buea 3e', 'Tiko', 'Muyuka', 'Kumba', 'Mamfe', 'Widikum', 'Limbe', 'Idenau', 'Bamusso', 'Dibombari', 'Bonaleo', 'Molyko', 'Great Soppo', 'Small Soppo', 'Bonduma', 'Wokoko', 'Wight', 'Bismarck'],
+  'Bertoua': ['Bertoua 1er', 'Bertoua 2e', 'Betare-Oya', 'Garoua-Boulaï', 'Lomie', 'Somalomo', 'Mandjou', 'Bélabo', 'Yokadouma', 'Ngoura', 'Batouri', 'Mandjou', 'Kette', 'Messamena', 'Nguelebok', 'Mbang', 'Abong Mbang', 'Lolodorf'],
+  'Ebolowa': ['Ebolowa 1er', 'Ebolowa 2e', 'Meyomessala', 'Ntui', 'Mfou', 'Bikok', 'Djoum', 'Sangmélima', 'Mintom', 'Kribi', 'Lolodorf', 'Oveng', 'Zoétélé', 'Meyomessi', 'Bipinde', 'Mvengue', 'Ngoulemakong', 'Afanmega'],
+  'Ngaoundéré': ['Ngaoundéré 1er', 'Ngaoundéré 2e', 'Ngaoundal', 'Tcholliré', 'Moutoun', 'Baboua', 'Tibati', 'Yalimou', 'Martap', 'Nganha', 'Belel', 'Banyo', 'Mbe', 'Galim-Tignère', 'Mayo-Baléo', 'Tignère', 'Djamboutou', 'Koundé', 'Faro', 'Poli'],
+};
 
 const AddClientForm = ({ onClose, onClientAdded }) => {
   const [formData, setFormData] = useState({
@@ -8,15 +34,26 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
     nom: '',
     telephone: '',
     quartier: '',
-    ville: 'Abidjan',
+    ville: 'Douala',
     prix: '',
     date_debut: '',
     date_fin: '',
   });
+const [quartiers, setQuartiers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  useEffect(() => {
+    const fetchQuartiers = async () => {
+      if (formData.ville && QUARTIERS_CAMEROUN[formData.ville]) {
+        setQuartiers(QUARTIERS_CAMEROUN[formData.ville]);
+      } else {
+        setQuartiers([]);
+      }
+    };
+    fetchQuartiers();
+  }, [formData.ville]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,10 +67,18 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         return;
       }
     }
-    setFormData({
-      ...formData,
-      [name]: value || ''
-    });
+    if (name === 'ville') {
+      setFormData({
+        ...formData,
+        ville: value,
+        quartier: ''
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value || ''
+      });
+    }
   };
 
   const validateForm = () => {
@@ -103,7 +148,7 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
         nom: '',
         telephone: '',
         quartier: '',
-        ville: 'Abidjan',
+        ville: 'Douala',
         prix: '',
         date_debut: '',
         date_fin: ''
@@ -212,16 +257,19 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           <MapPin size={16} style={{ marginRight: '0.5rem' }} />
           Ville *
         </label>
-        <input
-          type="text"
+        <select
           id="ville"
           name="ville"
           value={formData.ville}
           onChange={handleChange}
           required
-          placeholder="Ex: Abidjan, Yamoussoukro..."
           className="form-input"
-        />
+        >
+          <option value="">-- Sélectionner une ville --</option>
+          {VILLES_CAMEROUN.map(ville => (
+            <option key={ville} value={ville}>{ville}</option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">
@@ -247,16 +295,20 @@ const AddClientForm = ({ onClose, onClientAdded }) => {
           <MapPin size={16} style={{ marginRight: '0.5rem' }} />
           Quartier *
         </label>
-        <input
-          type="text"
+        <select
           id="quartier"
           name="quartier"
           value={formData.quartier}
           onChange={handleChange}
           required
-          placeholder="Ex: Plateau, Yopougon, Cocody..."
           className="form-input"
-        />
+          disabled={!formData.ville}
+        >
+          <option value="">-- Sélectionner un quartier --</option>
+          {quartiers.map(quartier => (
+            <option key={quartier} value={quartier}>{quartier}</option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">

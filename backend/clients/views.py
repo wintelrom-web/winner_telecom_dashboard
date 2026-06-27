@@ -1,14 +1,76 @@
 from django.shortcuts import render
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
 from django.db import DatabaseError, models
 import logging
-from .models import Client, Subscription
-from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer
+from .models import Client, Subscription, Payment
+from .serializers import ClientSerializer, SubscriptionSerializer, DashboardStatsSerializer, PaymentSerializer
+
+VILLES_CAMEROUN = [
+    'Yaoundé',  # Centre
+    'Douala',   # Littoral
+    'Bafoussam',  # West
+    'Garoua',  # North
+    'Maroua',  # Far North
+    'Bamenda',  # Northwest
+    'Buea',     # Southwest
+    'Bertoua',  # East
+    'Ebolowa',  # South
+    'Ngaoundéré',  # Adamawa
+]
+
+QUARTIERS_CAMEROUN = {
+    'Yaoundé': ['Centre Administrative', 'Bastos', 'Ngoussou', 'Mvog-Ada', 'Elig-Mfomo', 'Ekoudou', 'Etoug-Ebe', 'Mokolo', 'Nkol-Eton', 'Nkol-Afamba'],
+    'Douala': ['Douala 1er', 'Douala 2e', 'Douala 3e', 'Douala 4e', 'Douala 5e', 'Bonaberi', 'Nkongsamba', 'Kotto', 'New Bell', 'Bonapriso', 'Japoma', 'Mouelle'],
+    'Bafoussam': ['Bafoussam 1er', 'Bafoussam 2e', 'Bafoussam 3e', 'Tchecoua', 'Foumbot', 'Foumban', 'Bandjoun', 'Soumtcha', 'Bangante', 'Magba'],
+    'Garoua': ['Garoua 1er', 'Garoua 2e', 'Garoua 3e', 'Maga', 'Tchamba', 'Touboro', 'Tchanaga', 'Poli'],
+    'Maroua': ['Maroua 1er', 'Maroua 2e', 'Maroua 3e', 'Tokombéri', 'Mokolo', 'Kalerah', 'Bouda'],
+    'Bamenda': ['Bamenda 1er', 'Bamenda 2e', 'Bamenda 3e', 'Bamenda 4e', 'Bambui', 'Wum', 'Kumbo', 'Oku', 'Njinike'],
+    'Buea': ['Buea 1er', 'Buea 2e', 'Buea 3e', 'Tiko', 'Muyuka', 'Kumba', 'Mamfe', 'Widikum'],
+    'Bertoua': ['Bertoua 1er', 'Bertoua 2e', 'Betare-Oya', 'Garoua-Boulaï', 'Lomie', 'Somalomo', 'Mandjou'],
+    'Ebolowa': ['Ebolowa 1er', 'Ebolowa 2e', 'Meyomessala', 'Ntui', 'Mfou', 'Bikok', 'Djoum'],
+    'Ngaoundéré': ['Ngaoundéré 1er', 'Ngaoundéré 2e', 'Ngaoundal', 'Tcholliré', 'Moutoun', 'Baboua'],
+}
 
 logger = logging.getLogger(__name__)
+
+def _parse_prix(prix_str):
+    if not prix_str:
+        return '1Mo', 0
+    amount = 0
+    payment_type = '1Mo'
+    try:
+        import re
+        match = re.search(r'(\d+)', str(prix_str))
+        if match:
+            amount = float(match.group(1))
+    except (ValueError, TypeError):
+        amount = 0
+    if 'VIP' in str(prix_str):
+        payment_type = 'VIP'
+    elif 'Premium' in str(prix_str):
+        payment_type = 'Premium'
+    elif 'Access' in str(prix_str):
+        payment_type = 'Access'
+    return payment_type, amount
+
+def _create_payment(client, today=None):
+    if today is None:
+        today = timezone.now().date()
+    payment_type, amount = _parse_prix(client.prix)
+    if amount > 0:
+        Payment.objects.create(
+            client=client,
+            username=client.nom,
+            amount=amount,
+            type=payment_type,
+            month=today.month,
+            year=today.year,
+            day=today.day
+        )
 
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
@@ -16,7 +78,6 @@ class ClientViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            # Vérifier si la table clients existe et contient des données
             if not Client.objects.exists():
                 return Response({
                     'clients': [],
@@ -24,7 +85,31 @@ class ClientViewSet(viewsets.ModelViewSet):
                     'total': 0
                 }, status=200)
             
-            return super().list(request, *args, **kwargs)
+            queryset = Client.objects.all()
+            ville = request.query_params.get('ville')
+            if ville:
+                queryset = queryset.filter(ville__iexact=ville)
+            
+            statut = request.query_params.get('statut')
+            if statut == 'actif':
+                queryset = queryset.filter(subscription__est_actif=True, subscription__date_fin__gte=timezone.now().date())
+            elif statut == 'expiré':
+                queryset = queryset.filter(subscription__date_fin__lt=timezone.now().date())
+            elif statut == 'échéance':
+                from datetime import timedelta
+                today = timezone.now().date()
+                trois_jours = today + timedelta(days=3)
+                queryset = queryset.filter(
+                    subscription__est_actif=True,
+                    subscription__date_fin__gte=today,
+                    subscription__date_fin__lt=trois_jours
+                )
+            
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({
+                'clients': serializer.data,
+                'total': queryset.count()
+            })
         except DatabaseError as e:
             logger.error(f"Database error in ClientViewSet.list: {str(e)}")
             return Response({
@@ -46,14 +131,13 @@ class ClientViewSet(viewsets.ModelViewSet):
         logger.info(f"POST /api/clients/ - Request data: {request.data}")
         
         try:
-            # Créer le client avec les données du formulaire
             client_data = {
                 'matricule': request.data.get('matricule'),
                 'quartier': request.data.get('quartier'),
                 'nom': request.data.get('nom'),
                 'telephone': request.data.get('telephone'),
                 'prix': request.data.get('prix', ''),
-                'statut': request.data.get('statut', 'actif'),
+                'ville': request.data.get('ville', ''),
                 'date_debut': request.data.get('date_debut'),
                 'date_fin': request.data.get('date_fin'),
             }
@@ -67,6 +151,7 @@ class ClientViewSet(viewsets.ModelViewSet):
                 logger.info("Serializer is valid, saving client...")
                 client = serializer.save()
                 logger.info(f"Client created successfully: {client.id} - {client.nom}")
+                _create_payment(client)
                 
                 headers = self.get_success_headers(serializer.data)
                 logger.info("Returning 201 Created response")
@@ -88,20 +173,6 @@ class ClientViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=True, methods=['post'])
-    def bloquer_acces(self, request, pk=None):
-        client = self.get_object()
-        client.statut = 'bloqué'
-        client.save()
-        return Response({'status': 'client bloqué'})
-    
-    @action(detail=True, methods=['post'])
-    def activer_acces(self, request, pk=None):
-        client = self.get_object()
-        client.statut = 'actif'
-        client.save()
-        return Response({'status': 'client activé'})
-    
-    @action(detail=True, methods=['post'])
     def etendre_abonnement(self, request, pk=None):
         from datetime import timedelta
         try:
@@ -116,6 +187,10 @@ class ClientViewSet(viewsets.ModelViewSet):
                     date_fin=today + timedelta(days=30),
                     est_actif=True
                 )
+                client.save()
+                
+                _create_payment(client)
+                
                 return Response({
                     'status': 'abonnement créé',
                     'message': f'Abonnement de {client.nom} créé pour un mois',
@@ -138,7 +213,9 @@ class ClientViewSet(viewsets.ModelViewSet):
             subscription.date_debut = new_date_debut
             subscription.date_fin = new_date_fin
             subscription.est_actif = True
+            client.save()
             subscription.save()
+            _create_payment(client)
             
             return Response({
                 'status': 'abonnement étendu',
@@ -163,30 +240,40 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.select_related('client').all()
     serializer_class = SubscriptionSerializer
 
+class VilleListView(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        return Response({'villes': VILLES_CAMEROUN})
+
+class QuartierListView(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        ville = request.query_params.get('ville')
+        if ville and ville in QUARTIERS_CAMEROUN:
+            return Response({'quartiers': QUARTIERS_CAMEROUN[ville]})
+        return Response({'quartiers': []})
+
 class DashboardStatsViewSet(viewsets.ViewSet):
     def list(self, request):
         try:
             total_clients = Client.objects.count()
             abonnements_actifs = Subscription.objects.filter(est_actif=True, date_fin__gte=timezone.now().date()).count()
-            expirés = Subscription.objects.filter(date_fin__lt=timezone.now().date()).count()
+            expirer = Subscription.objects.filter(date_fin__lt=timezone.now().date()).count()
             
             # Échéances proches: count subscriptions ending within 3 days
-            # This alerts when payment/echeance is due soon
             from datetime import timedelta
             today = timezone.now().date()
-            three_days_from_now = today + timedelta(days=3)
+            trois_jours = today + timedelta(days=3)
             
-            # Count subscriptions ending in the next 3 days
+            # Count subscriptions ending strictly before 3 days from now
             échéances_proches = Subscription.objects.filter(
                 date_fin__gte=today,
-                date_fin__lte=three_days_from_now,
+                date_fin__lt=trois_jours,
                 est_actif=True
             ).count()
             
             stats = {
                 'total_clients': total_clients,
                 'abonnements_actifs': abonnements_actifs,
-                'expirés': expirés,
+                'expirer': expirer,
                 'échéances_proches': échéances_proches
             }
             
@@ -206,3 +293,30 @@ class DashboardStatsViewSet(viewsets.ViewSet):
                 'message': 'Erreur inattendue lors de la récupération des statistiques',
                 'details': str(e)
             }, status=500)
+
+
+class NoPagination(PageNumberPagination):
+    page_size = None
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.select_related('client').all()
+    serializer_class = PaymentSerializer
+    pagination_class = NoPagination
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        month = self.request.query_params.get('month')
+        year = self.request.query_params.get('year')
+        ville = self.request.query_params.get('ville')
+        quartier = self.request.query_params.get('quartier')
+        
+        if month:
+            queryset = queryset.filter(month=month)
+        if year:
+            queryset = queryset.filter(year=year)
+        if ville:
+            queryset = queryset.filter(client__ville__iexact=ville)
+        if quartier:
+            queryset = queryset.filter(client__quartier__iexact=quartier)
+        
+        return queryset

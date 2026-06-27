@@ -1,6 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, X, Trash2, User, Phone, MapPin, Calendar, Shield } from 'lucide-react';
-import { updateClient, deleteClient, blockClientAccess, activateClientAccess } from '../services/api';
+import { ArrowLeft, Save, X, Trash2, User, Phone, MapPin, Calendar } from 'lucide-react';
+import { updateClient, deleteClient } from '../services/api';
+
+const VILLES_CAMEROUN = [
+  'Yaoundé',  // Centre
+  'Douala',   // Littoral
+  'Bafoussam',  // West
+  'Garoua',  // North
+  'Maroua',  // Far North
+  'Bamenda',  // Northwest
+  'Buea',     // Southwest
+  'Bertoua',  // East
+  'Ebolowa',  // South
+  'Ngaoundéré',  // Adamawa
+];
+
+const QUARTIERS_CAMEROUN = {
+  'Yaoundé': ['Centre Administrative', 'Bastos', 'Ngoussou', 'Mvog-Ada', 'Elig-Mfomo', 'Ekoudou', 'Etoug-Ebe', 'Mokolo', 'Nkol-Eton', 'Nkol-Afamba','Damas','Ezala','barriere','Obam','Nkolnda'],
+  'Douala': ['Douala 1er', 'Douala 2e', 'Douala 3e', 'Douala 4e', 'Douala 5e', 'Bonaberi', 'Nkongsamba', 'Kotto', 'New Bell', 'Bonapriso', 'Japoma', 'Mouelle'],
+  'Bafoussam': ['Bafoussam 1er', 'Bafoussam 2e', 'Bafoussam 3e', 'Tchecoua', 'Foumbot', 'Foumban', 'Bandjoun', 'Soumtcha', 'Bangante', 'Magba'],
+  'Garoua': ['Garoua 1er', 'Garoua 2e', 'Garoua 3e', 'Maga', 'Tchamba', 'Touboro', 'Tchanaga', 'Poli'],
+  'Maroua': ['Maroua 1er', 'Maroua 2e', 'Maroua 3e', 'Tokombéri', 'Mokolo', 'Kalerah', 'Bouda'],
+  'Bamenda': ['Bamenda 1er', 'Bamenda 2e', 'Bamenda 3e', 'Bamenda 4e', 'Bambui', 'Wum', 'Kumbo', 'Oku', 'Njinike'],
+  'Buea': ['Buea 1er', 'Buea 2e', 'Buea 3e', 'Tiko', 'Muyuka', 'Kumba', 'Mamfe', 'Widikum'],
+  'Bertoua': ['Bertoua 1er', 'Bertoua 2e', 'Betare-Oya', 'Garoua-Boulaï', 'Lomie', 'Somalomo', 'Mandjou'],
+  'Ebolowa': ['Ebolowa 1er', 'Ebolowa 2e', 'Meyomessala', 'Ntui', 'Mfou', 'Bikok', 'Djoum'],
+  'Ngaoundéré': ['Ngaoundéré 1er', 'Ngaoundéré 2e', 'Ngaoundal', 'Tcholliré', 'Moutoun', 'Baboua'],
+};
 
 const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
   const [formData, setFormData] = useState({
@@ -10,10 +36,10 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
     quartier: '',
     ville: '',
     prix: '1Mo 5000F',
-    statut: 'actif',
     date_debut: '',
     date_fin: ''
   });
+  const [quartiers, setQuartiers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -25,14 +51,24 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
         nom: client.nom || '',
         telephone: client.telephone || '',
         quartier: client.quartier || '',
-        ville: client.ville || 'Abidjan',
+        ville: client.ville || 'Douala',
         prix: client.prix || '1Mo 5000F',
-        statut: client.statut || 'actif',
         date_debut: client.subscription?.date_debut || '',
         date_fin: client.subscription?.date_fin || ''
       });
+      if (client.ville && QUARTIERS_CAMEROUN[client.ville]) {
+        setQuartiers(QUARTIERS_CAMEROUN[client.ville]);
+      }
     }
   }, [client]);
+
+  useEffect(() => {
+    if (formData.ville && QUARTIERS_CAMEROUN[formData.ville]) {
+      setQuartiers(QUARTIERS_CAMEROUN[formData.ville]);
+    } else {
+      setQuartiers([]);
+    }
+  }, [formData.ville]);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -41,10 +77,18 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'ville') {
+      setFormData(prev => ({
+        ...prev,
+        ville: value,
+        quartier: ''
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -79,59 +123,6 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
       setLoading(false);
       setShowDeleteConfirm(false);
     }
-  };
-
-  const toggleStatus = async () => {
-    setLoading(true);
-    
-    try {
-      const newStatus = formData.statut === 'actif' ? 'inactif' : 'actif';
-      
-      if (newStatus === 'inactif') {
-        await blockClientAccess(client.id);
-      } else {
-        await activateClientAccess(client.id);
-      }
-      
-      setFormData(prev => ({ ...prev, statut: newStatus }));
-      showMessage('success', `Statut changé vers ${newStatus}`);
-    } catch (error) {
-      console.error('Error toggling status:', error);
-      showMessage('error', 'Erreur lors du changement de statut');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusBadge = (statut) => {
-    const styles = {
-      actif: { bg: '#dcfce7', color: '#166534', icon: Shield },
-      inactif: { bg: '#fef2f2', color: '#dc2626', icon: X },
-      expiré: { bg: '#fef3c7', color: '#d97706', icon: Calendar },
-      bloqué: { bg: '#f3f4f6', color: '#374151', icon: Shield }
-    };
-    
-    const style = styles[statut] || styles.actif;
-    const Icon = style.icon;
-    
-    return (
-      <span 
-        style={{
-          backgroundColor: style.bg,
-          color: style.color,
-          padding: '0.25rem 0.75rem',
-          borderRadius: '20px',
-          fontSize: '0.875rem',
-          fontWeight: '600',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem'
-        }}
-      >
-        <Icon size={14} />
-        {statut}
-      </span>
-    );
   };
 
   return (
@@ -215,21 +206,45 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
                 <MapPin size={16} style={{ marginRight: '0.5rem' }} />
                 Quartier
               </label>
-              <input
-                type="text"
+              <select
                 name="quartier"
                 value={formData.quartier}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Entrez le quartier"
                 required
-              />
+                disabled={!formData.ville}
+              >
+                <option value="">-- Sélectionner un quartier --</option>
+                {quartiers.map(quartier => (
+                  <option key={quartier} value={quartier}>{quartier}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Ville */}
+            <div className="form-group">
+              <label className="form-label">
+                <MapPin size={16} style={{ marginRight: '0.5rem' }} />
+                Ville
+              </label>
+              <select
+                name="ville"
+                value={formData.ville}
+                onChange={handleChange}
+                className="form-input"
+                required
+              >
+                <option value="">-- Sélectionner une ville --</option>
+                {VILLES_CAMEROUN.map(ville => (
+                  <option key={ville} value={ville}>{ville}</option>
+                ))}
+              </select>
             </div>
 
             {/* Prix */}
             <div className="form-group">
               <label className="form-label">
-                <Shield size={16} style={{ marginRight: '0.5rem' }} />
+                <Calendar size={16} style={{ marginRight: '0.5rem' }} />
                 Prix
               </label>
               <select
@@ -274,26 +289,6 @@ const Edit = ({ client, onBack, onClientUpdated, onClientDeleted }) => {
                 onChange={handleChange}
                 className="form-input"
               />
-            </div>
-
-            {/* Statut */}
-            <div className="form-group">
-              <label className="form-label">
-                <Shield size={16} style={{ marginRight: '0.5rem' }} />
-                Statut
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                {getStatusBadge(formData.statut)}
-                <button
-                  type="button"
-                  onClick={toggleStatus}
-                  disabled={loading}
-                  className="btn btn-secondary"
-                  style={{ padding: '0.5rem 1rem' }}
-                >
-                  {formData.statut === 'actif' ? 'Désactiver' : 'Activer'}
-                </button>
-              </div>
             </div>
           </div>
 

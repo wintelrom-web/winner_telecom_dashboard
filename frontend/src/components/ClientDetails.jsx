@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, MapPin, Phone, Calendar, CreditCard, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { X, MapPin, Phone, Calendar, CreditCard } from 'lucide-react';
 import { payerAbonnement } from '../services/api';
 
 const ClientDetails = ({ client, onClose, onClientUpdated }) => {
@@ -20,38 +20,13 @@ const ClientDetails = ({ client, onClose, onClientUpdated }) => {
       setLoading(false);
     }
   };
+
   if (!client) return null;
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
-
-  const getStatusIcon = (statut) => {
-    switch (statut) {
-      case 'actif':
-        return <CheckCircle size={16} style={{ color: '#10b981' }} />;
-      case 'expiré':
-        return <XCircle size={16} style={{ color: '#ef4444' }} />;
-      case 'bloqué':
-        return <AlertTriangle size={16} style={{ color: '#7c3aed' }} />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusColor = (statut) => {
-    switch (statut) {
-      case 'actif':
-        return '#10b981';
-      case 'expiré':
-        return '#ef4444';
-      case 'bloqué':
-        return '#7c3aed';
-      default:
-        return '#6b7280';
-    }
   };
 
   return (
@@ -105,22 +80,6 @@ const ClientDetails = ({ client, onClose, onClientUpdated }) => {
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#1f2937' }}>{client.nom}</h3>
               <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280', fontSize: '0.875rem' }}>{client.matricule}</p>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                marginTop: '0.5rem',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '9999px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                background: `${getStatusColor(client.statut)}20`,
-                color: getStatusColor(client.statut)
-              }}>
-                {getStatusIcon(client.statut)}
-                {client.statut}
-              </span>
             </div>
           </div>
 
@@ -220,7 +179,7 @@ const ClientDetails = ({ client, onClose, onClientUpdated }) => {
                 }}>
                   <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>Date fin</p>
                   <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9375rem', color: '#1f2937', fontWeight: '600' }}>
-                  {formatDate(client.subscription.date_fin)}
+                    {formatDate(client.subscription.date_fin)}
                   </p>
                 </div>
                 <div style={{ 

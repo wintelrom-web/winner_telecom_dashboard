@@ -1,40 +1,20 @@
-import React, { useState } from 'react';
-import { Search, Filter, Users, Edit, Info, DollarSign } from 'lucide-react';
-import { blockClientAccess, activateClientAccess, updateClient } from '../services/api';
+import React from 'react';
+import { Search, Filter, Edit, Info } from 'lucide-react';
 
-const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefresh, onViewClient, filterMonth, setFilterMonth, filterYear, setFilterYear }) => {
-  const [loading, setLoading] = useState(false);
+const VILLES_CAMEROUN = [
+  'Yaoundé',  // Centre
+  'Douala',   // Littoral
+  'Bafoussam',  // West
+  'Garoua',  // North
+  'Maroua',  // Far North
+  'Bamenda',  // Northwest
+  'Buea',     // Southwest
+  'Bertoua',  // East
+  'Ebolowa',  // South
+  'Ngaoundéré',  // Adamawa
+];
 
-  const toggleClientStatus = async (clientId, currentStatus) => {
-    setLoading(true);
-    try {
-      if (currentStatus === 'actif') {
-        await blockClientAccess(clientId);
-      } else {
-        await activateClientAccess(clientId);
-      }
-      if (onRefresh) onRefresh();
-    } catch (error) {
-      console.error('Error toggling client status:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusBadge = (statut) => {
-    const styles = {
-      actif: 'status-active',
-      inactif: 'status-inactive',
-      expiré: 'status-expired',
-      bloqué: 'status-warning'
-    };
-    
-    return (
-      <span className={`status-badge ${styles[statut] || styles.actif}`}>
-        {statut}
-      </span>
-    );
-  };
+const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onViewClient, filterVille, setFilterVille, filterMonth, setFilterMonth, filterYear, setFilterYear }) => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -44,7 +24,7 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
   return (
     <div className="table-container">
       <div className="search-container">
-        <h2>Quartiers</h2>
+        <h2>Clients</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <Search 
@@ -66,8 +46,24 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
               style={{ paddingLeft: '2.5rem', width: '300px' }}
             />
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <Filter size={20} />
+            <select
+              value={filterVille}
+              onChange={(e) => setFilterVille(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '0.875rem'
+              }}
+            >
+               <option value="">Villes</option>
+               {VILLES_CAMEROUN.map(ville => (
+                 <option key={ville} value={ville}>{ville}</option>
+               ))}
+            </select>
+           
             <select
               value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
@@ -111,12 +107,13 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
               <option value="2028">2028</option>
             </select>
             
-            {(filterMonth || filterYear) && (
-              <button
-                onClick={() => {
-                  setFilterMonth('');
-                  setFilterYear('');
-                }}
+            {(filterVille || filterMonth || filterYear) && (
+               <button
+                 onClick={() => {
+                   setFilterVille('');
+                   setFilterMonth('');
+                   setFilterYear('');
+                 }}
                 className="btn btn-secondary"
                 style={{ padding: '0.5rem', fontSize: '0.75rem' }}
               >
@@ -130,24 +127,25 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
       <div className="table-wrapper">
         <table>
           <thead>
-            <tr>
-              <th>Matricule</th>
-              <th>Quartier</th>
-              <th>Nom</th>
-              <th>Téléphone</th>
-              <th>Prix</th>
-              <th>Statut</th>
-              <th>Échéance</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((client) => (
-              <tr key={client.id}>
-                <td>{client.matricule}</td>
-                <td>{client.quartier}</td>
-                <td>{client.nom}</td>
-                <td>{client.telephone}</td>
+               <tr>
+                  <th>Matricule</th>
+                  <th>Nom</th>
+                  <th>Ville</th>
+                  <th>Quartier</th>
+                  <th>Téléphone</th>
+                  <th>Prix</th>
+                  <th>Échéance</th>
+                  <th>Actions</th>
+               </tr>
+           </thead>
+           <tbody>
+              {clients.map((client) => (
+                <tr key={client.id}>
+                  <td>{client.matricule}</td>
+                    <td>{client.nom}</td>
+                    <td>{client.ville}</td>
+                    <td>{client.quartier}</td>
+                  <td>{client.telephone}</td>
                 <td>
                   <span style={{
                     background: '#f3f4f6',
@@ -159,21 +157,6 @@ const ClientTable = ({ clients, searchTerm, setSearchTerm, onEditClient, onRefre
                   }}>
                     {client.prix || 'N/A'}
                   </span>
-                </td>
-                <td>
-                  <button
-                    onClick={() => toggleClientStatus(client.id, client.statut)}
-                    disabled={loading}
-                    className="status-toggle-btn"
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      padding: '0'
-                    }}
-                  >
-                    {getStatusBadge(client.statut)}
-                  </button>
                 </td>
                 <td>{client.subscription?.date_fin ? formatDate(client.subscription.date_fin) : 'N/A'}</td>
                 <td>

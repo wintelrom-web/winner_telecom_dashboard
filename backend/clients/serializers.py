@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Subscription
+from .models import Client, Subscription, Payment
 
 class ClientSerializer(serializers.ModelSerializer):
     subscription = serializers.SerializerMethodField()
@@ -10,12 +10,13 @@ class ClientSerializer(serializers.ModelSerializer):
     nom = serializers.CharField(max_length=200, required=False, allow_blank=True)
     telephone = serializers.CharField(max_length=20, required=False, allow_blank=True)
     prix = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    ville = serializers.CharField(max_length=100, required=False, allow_blank=True)
     
     class Meta:
         model = Client
         fields = [
             'id', 'matricule', 'quartier', 'nom', 'telephone',
-            'prix', 'statut', 'date_creation', 'date_mise_a_jour',
+            'prix', 'ville', 'date_creation', 'date_mise_a_jour',
             'subscription', 'date_debut', 'date_fin'
         ]
     
@@ -70,7 +71,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     client_matricule = serializers.CharField(source='client.matricule', read_only=True)
     client_quartier = serializers.CharField(source='client.quartier', read_only=True)
     client_telephone = serializers.CharField(source='client.telephone', read_only=True)
-    client_statut = serializers.CharField(source='client.statut', read_only=True)
     jours_restants = serializers.ReadOnlyField()
     est_expiré = serializers.ReadOnlyField()
     échéance_proche = serializers.ReadOnlyField()
@@ -79,7 +79,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = [
             'id', 'client', 'client_nom', 'client_matricule', 'client_quartier',
-            'client_telephone', 'client_statut', 'date_debut', 'date_fin',
+            'client_telephone', 'date_debut', 'date_fin',
             'est_actif', 'jours_restants', 'est_expiré', 'échéance_proche'
         ]
 
@@ -87,5 +87,14 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 class DashboardStatsSerializer(serializers.Serializer):
     total_clients = serializers.IntegerField()
     abonnements_actifs = serializers.IntegerField()
-    expirés = serializers.IntegerField()
+    expirer = serializers.IntegerField()
     échéances_proches = serializers.IntegerField()
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source='client.nom', read_only=True)
+    client_matricule = serializers.CharField(source='client.matricule', read_only=True)
+    
+    class Meta:
+        model = Payment
+        fields = ['id', 'client', 'client_name', 'client_matricule', 'username', 'amount', 'type', 'date', 'payment_date', 'month', 'year', 'day']

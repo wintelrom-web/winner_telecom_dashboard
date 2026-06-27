@@ -63,7 +63,6 @@ const Settings = ({ onBack, darkMode, onDarkModeToggle }) => {
               <th>Nom</th>
               <th>Quartier</th>
               <th>Téléphone</th>
-              <th>Statut</th>
               <th>Expiration</th>
               <th>Jours Restants</th>
             </tr>
@@ -75,7 +74,6 @@ const Settings = ({ onBack, darkMode, onDarkModeToggle }) => {
                 <td>${client.nom}</td>
                 <td>${client.quartier}</td>
                 <td>${client.telephone}</td>
-                <td class="status-${client.statut}">${client.statut.toUpperCase()}</td>
                 <td>${client.subscription?.date_fin || '-'}</td>
                 <td>${client.subscription?.jours_restants ?? '-'}</td>
               </tr>

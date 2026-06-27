@@ -2,31 +2,68 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, DollarSign, Calendar, User, Filter, TrendingUp } from 'lucide-react';
 import { getPayments } from '../services/api';
 
+const VILLES_CAMEROUN = [
+  'Yaoundé',  // Centre
+  'Douala',   // Littoral
+  'Bafoussam',  // West
+  'Garoua',  // North
+  'Maroua',  // Far North
+  'Bamenda',  // Northwest
+  'Buea',     // Southwest
+  'Bertoua',  // East
+  'Ebolowa',  // South
+  'Ngaoundéré',  // Adamawa
+];
+
+const QUARTIERS_CAMEROUN = {
+  'Yaoundé': ['Centre Administrative', 'Bastos', 'Ngoussou', 'Mvog-Ada', 'Elig-Mfomo', 'Ekoudou', 'Etoug-Ebe', 'Mokolo', 'Nkol-Eton', 'Nkol-Afamba'],
+  'Douala': ['Douala 1er', 'Douala 2e', 'Douala 3e', 'Douala 4e', 'Douala 5e', 'Bonaberi', 'Nkongsamba', 'Kotto', 'New Bell', 'Bonapriso', 'Japoma', 'Mouelle'],
+  'Bafoussam': ['Bafoussam 1er', 'Bafoussam 2e', 'Bafoussam 3e', 'Tchecoua', 'Foumbot', 'Foumban', 'Bandjoun', 'Soumtcha', 'Bangante', 'Magba'],
+  'Garoua': ['Garoua 1er', 'Garoua 2e', 'Garoua 3e', 'Maga', 'Tchamba', 'Touboro', 'Tchanaga', 'Poli'],
+  'Maroua': ['Maroua 1er', 'Maroua 2e', 'Maroua 3e', 'Tokombéri', 'Mokolo', 'Kalerah', 'Bouda'],
+  'Bamenda': ['Bamenda 1er', 'Bamenda 2e', 'Bamenda 3e', 'Bamenda 4e', 'Bambui', 'Wum', 'Kumbo', 'Oku', 'Njinike'],
+  'Buea': ['Buea 1er', 'Buea 2e', 'Buea 3e', 'Tiko', 'Muyuka', 'Kumba', 'Mamfe', 'Widikum'],
+  'Bertoua': ['Bertoua 1er', 'Bertoua 2e', 'Betare-Oya', 'Garoua-Boulaï', 'Lomie', 'Somalomo', 'Mandjou'],
+  'Ebolowa': ['Ebolowa 1er', 'Ebolowa 2e', 'Meyomessala', 'Ntui', 'Mfou', 'Bikok', 'Djoum'],
+  'Ngaoundéré': ['Ngaoundéré 1er', 'Ngaoundéré 2e', 'Ngaoundal', 'Tcholliré', 'Moutoun', 'Baboua'],
+};
+
 const Fonds = ({ onBack }) => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterMonth, setFilterMonth] = useState('');
   const [filterYear, setFilterYear] = useState('');
+  const [filterVille, setFilterVille] = useState('');
+  const [filterQuartier, setFilterQuartier] = useState('');
+  const [quartiers, setQuartiers] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
+    if (filterVille && QUARTIERS_CAMEROUN[filterVille]) {
+      setQuartiers(QUARTIERS_CAMEROUN[filterVille]);
+    } else {
+      setQuartiers([]);
+      setFilterQuartier('');
+    }
+  }, [filterVille]);
+
+  useEffect(() => {
     fetchPayments();
-  }, [filterMonth, filterYear]);
+  }, [filterMonth, filterYear, filterVille, filterQuartier]);
 
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      let url = '/payments/';
+      const url = '/payments/';
       const params = new URLSearchParams();
       
       if (filterMonth) params.append('month', filterMonth);
       if (filterYear) params.append('year', filterYear);
+      if (filterVille) params.append('ville', filterVille);
+      if (filterQuartier) params.append('quartier', filterQuartier);
       
-      if (params.toString()) {
-        url += '?' + params.toString();
-      }
-      
-      const response = await getPayments(url);
+      const urlWithParams = params.toString() ? `${url}?${params.toString()}` : url;
+      const response = await getPayments(urlWithParams);
       setPayments(response.data || []);
       
       // Calculer le total
@@ -125,6 +162,39 @@ const Fonds = ({ onBack }) => {
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
         <Filter size={20} />
+<select
+          value={filterVille}
+          onChange={(e) => setFilterVille(e.target.value)}
+          style={{
+            padding: '0.5rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '0.875rem'
+          }}
+        >
+          <option value="">Villes</option>
+          {VILLES_CAMEROUN.map(ville => (
+            <option key={ville} value={ville}>{ville}</option>
+          ))}
+        </select>
+        
+        <select
+          value={filterQuartier}
+          onChange={(e) => setFilterQuartier(e.target.value)}
+          disabled={!quartiers.length}
+          style={{
+            padding: '0.5rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '0.875rem'
+          }}
+        >
+          <option value="">Quartiers</option>
+          {quartiers.map(quartier => (
+            <option key={quartier} value={quartier}>{quartier}</option>
+          ))}
+        </select>
+        
         <select
           value={filterMonth}
           onChange={(e) => setFilterMonth(e.target.value)}
@@ -168,24 +238,26 @@ const Fonds = ({ onBack }) => {
           <option value="2028">2028</option>
         </select>
         
-        {(filterMonth || filterYear) && (
-          <button
-            onClick={() => {
-              setFilterMonth('');
-              setFilterYear('');
-            }}
-            style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              cursor: 'pointer',
-              background: '#f3f4f6'
-            }}
-          >
-            Effacer
-          </button>
-        )}
+{(filterVille || filterQuartier || filterMonth || filterYear) && (
+           <button
+             onClick={() => {
+               setFilterVille('');
+               setFilterQuartier('');
+               setFilterMonth('');
+               setFilterYear('');
+             }}
+             style={{
+               padding: '0.5rem 1rem',
+               border: '1px solid #d1d5db',
+               borderRadius: '6px',
+               fontSize: '0.875rem',
+               cursor: 'pointer',
+               background: '#f3f4f6'
+             }}
+           >
+             Effacer
+           </button>
+         )}
       </div>
 
       {/* Payments Table */}
